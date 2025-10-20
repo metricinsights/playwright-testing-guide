@@ -1,0 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+- Ensure that test steps are detailed and informative within Allure reports.
+- Always include meaningful steps to enhance traceability of test execution.
+- Confirm that each report provides sufficient information (logs, error messages, etc.) for debugging any failed tests.

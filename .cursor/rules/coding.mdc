@@ -1,0 +1,24 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+- Ensure files have no ESLint warnings or errors. Follow the line length limit of 120 characters. 
+- Use Props if more than 4 params need to be passed.
+- Use Crypto library to generate random data. Min bytes - 4.
+- Use Ajv library to work with JSONSchema.
+-  Repeat DELETE functions for created objects in the test.afterAll
+- Use apiInstance for all requests and pass the token in headers only. 
+- Validate the response status code for every request.
+- For new endpoints: Check if the endpoint is listed in response412.ts. If missing, add it. 
+- Elements created using API must include "Playwright" in their names.
+- Use lowercase with hyphens for separation (e.g., folder-and-folder-element.spec.ts).
+- Inside files, use camelCase for functions, variables, and parameters (e.g., getTokens). 
+- Ensure each test covers one specific scenario (Single Responsibility Principle). 
+- Avoid dependencies between tests; each test should be independent.
+- All unique values (e.g., usernames, passwords, API keys) must be stored in environment variables and referenced from the .env file. 
+- Do not hardcode sensitive data directly into the tests or utility files. 
+- Ensure that tokens or credentials are not logged in the console or reports. 
+- Validate TypeScript usage (correct typings, async/await usage). 
+- Check for performance issues in request handling (e.g., unnecessary or duplicate calls).
+- Handle API errors to avoid test crashes: Log meaningful error messages to aid in debugging. Use try-catch blocks where necessary.

@@ -1,0 +1,20 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+#Coding workflow preferences 
+- Do not touch code that is irrelevant to the task.
+- Avoid making major changes to the patterns and architecture of how a feature works after it has been shown to work well, unless explicitly instructed.
+- Always think about what other methods and areas of code might be affected by code changes.
+- Always prefer simple solutions.
+- Always run tests with proper environment configuration (use npm run test:dev <env> not raw playwright
+- You are careful to only make changes that are: specifically requested, or that you are confident are well understood and related to the change being requested.
+- When fixing an issue or bug, do not introduce a new pattern or technology without first exhausting all options for the existing implementation. And if you finally do this, make sure to remove the old implementation afterwards so we do not have duplicate logic.
+- Never overwrite my .env file without first asking and confirming.
+- Ensure tests are easy to read and maintain. Test names should be descriptive and reflect the purpose of the test. 
+- If tests fail with "Invalid URL" errors, check that BASE_URL and other required env vars are set.
+- When debugging timeouts, test endpoints both individually and as part of sequences.
+- Document why endpoints are skipped (e.g., "causes cumulative resource issues in sequences").
+- Clean up debug files after completing investigation.
+- Always include summary statistics for skipped vs tested endpoints.
