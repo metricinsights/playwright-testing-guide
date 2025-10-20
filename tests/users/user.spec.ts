@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { ADMIN, POWER, REGULAR } from '../utils/auth';
-import { getDefaultAdminToken, setupUsersAndTokens, cleanupUsers, getUserToken, getUserTokenWithoutAuth } from './user';
+import { getDefaultAdminToken, setupUsersAndTokens, cleanupUsers, getUserToken, getUserTokenWithoutAuth } from '../users/user';
 
 //npm run test:dev stg70 user.spec.ts
 

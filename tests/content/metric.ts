@@ -1,5 +1,5 @@
 import * as crypto from 'crypto';
-import { apiInstance } from './auth';
+import { apiInstance } from '../utils/auth';
 
 // Function to create a Metric and return its ID
 export async function createMetric(

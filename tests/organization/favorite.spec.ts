@@ -11,7 +11,7 @@ import { createCategory, deleteCategory } from './category';
 import { createMetric, enableMetric, collectMetric, updateMetric, deleteMetric } from './metric';
 import { addingUserToGroup, createGroup } from './user-access';
 import { ADMIN, POWER, REGULAR, getTokens } from '../utils/auth';
-import { getDefaultAdminToken, setupUsersAndTokens, cleanupUsers } from './user';
+import { getDefaultAdminToken, setupUsersAndTokens, cleanupUsers } from '../users/user';
 
 let tokens: Awaited<ReturnType<typeof getTokens>>;
 let adminFavoriteFolderId: number | undefined; // Variable to store Admin favoriteFolderId

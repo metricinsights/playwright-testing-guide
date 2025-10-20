@@ -1,4 +1,4 @@
-import { apiInstance, usernamePower } from './auth';
+import { apiInstance, usernamePower } from '../utils/auth';
 import axios from 'axios';
 import { AxiosResponse } from 'axios';
 

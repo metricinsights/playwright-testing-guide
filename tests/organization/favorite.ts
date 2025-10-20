@@ -1,4 +1,4 @@
-import { apiInstance } from './auth';
+import { apiInstance } from '../utils/auth';
 import * as crypto from 'crypto';
 
 
