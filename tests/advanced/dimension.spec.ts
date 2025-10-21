@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test';
-// import Ajv from 'ajv';
 import Ajv from 'ajv';
 const ajv = new Ajv();
 
@@ -15,9 +14,9 @@ import {
 } from './dimension';
 import { createDimensionValue } from './dimension-value';
 import { ADMIN, POWER, REGULAR, getTokens } from '../utils/auth';
-import { createCategory, deleteCategory } from './category';
-import { createMetric, enableMetric, collectMetric, updateMetric, deleteMetric } from './metric';
-import { accessToMetric, accessToDimension } from './user-access';
+import { createCategory, deleteCategory } from '../content/category';
+import { createMetric, enableMetric, collectMetric, updateMetric, deleteMetric } from '../content/metric';
+import { accessToMetric, accessToDimension } from '../users/user-access';
 
 let tokens: Awaited<ReturnType<typeof getTokens>>;
 let dimensionId: number | undefined; // Variable to store dimensionId

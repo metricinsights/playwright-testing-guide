@@ -7,9 +7,9 @@ import {
   deleteMetricFromFavorite,
   deleteFF,
 } from './favorite';
-import { createCategory, deleteCategory } from './category';
-import { createMetric, enableMetric, collectMetric, updateMetric, deleteMetric } from './metric';
-import { addingUserToGroup, createGroup } from './user-access';
+import { createCategory, deleteCategory } from '../content/category';
+import { createMetric, enableMetric, collectMetric, updateMetric, deleteMetric } from '../content/metric';
+import { addingUserToGroup, createGroup } from '../users/user-access';
 import { ADMIN, POWER, REGULAR, getTokens } from '../utils/auth';
 import { getDefaultAdminToken, setupUsersAndTokens, cleanupUsers } from '../users/user';
 

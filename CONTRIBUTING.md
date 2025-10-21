@@ -16,8 +16,8 @@ Thank you for your interest in contributing! This document provides guidelines f
 
 ```bash
 # Fork the repository on GitHub, then:
-git clone https://github.com/YOUR_USERNAME/metric-insights-api-tests.git
-cd metric-insights-api-tests
+git clone https://github.com/YOUR_USERNAME/playwright-testing-guide.git
+cd playwright-testing-guide
 npm install
 ```
 
@@ -219,41 +219,6 @@ test('test 1', async () => {});
 test('check dataset', async () => {});
 ```
 
-## 📚 Documentation
-
-### JSDoc Comments
-
-Add JSDoc comments for helper functions:
-
-```typescript
-/**
- * Creates a new dataset via API
- * 
- * @param token - Authentication token
- * @param data - Dataset configuration
- * @returns Promise with API response containing dataset ID
- * 
- * @example
- * const response = await createDataset(token, {
- *   name: 'My Dataset',
- *   measurement_interval: 'daily'
- * });
- */
-export async function createDataset(
-  token: string,
-  data: DatasetConfig
-): Promise<ApiResponse<Dataset>> {
-  // Implementation
-}
-```
-
-### Update Documentation
-
-If you add new features, update:
-- README.md - Add to test suites list
-- API_REFERENCE.md - Document new functions
-- EXAMPLES.md - Add usage examples
-
 ## 🧹 Before Submitting
 
 ### Checklist
@@ -263,23 +228,10 @@ If you add new features, update:
 - [ ] No ESLint warnings or errors
 - [ ] All created resources are cleaned up
 - [ ] Test names are descriptive
-- [ ] Added/updated documentation
 - [ ] No sensitive data in code
 - [ ] Environment variables used correctly
 - [ ] Used Crypto for random data generation
 - [ ] Commit messages are clear
-
-### Run Quality Checks
-
-```bash
-# Run tests
-npm test
-
-# Check TypeScript
-npm run build
-
-# Format code (if you have prettier configured)
-npm run format
 ```
 
 ## 📤 Submitting Changes
@@ -357,22 +309,6 @@ Include:
 - Open an issue for questions
 - Check existing issues first
 - Be respectful and patient
-
-## 📜 Code of Conduct
-
-### Our Standards
-
-- Be respectful and inclusive
-- Welcome newcomers
-- Accept constructive criticism
-- Focus on what's best for the community
-
-### Unacceptable Behavior
-
-- Harassment or discrimination
-- Trolling or insulting comments
-- Publishing others' private information
-- Unprofessional conduct
 
 ## 🙏 Thank You!
 

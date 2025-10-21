@@ -9,7 +9,7 @@ import {
   postRequests,
   putRequests,
   deleteRequests,
-} from './response412and401';
+} from './response-errors';
 
 //npm run test:dev stg70 response412and401.spec.ts
 
