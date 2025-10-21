@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { getDefaultAdminToken, setupUsersAndTokens, cleanupUsers, createUser, getToken, deleteUser } from '../users/user';
 import { getGlossaryTerm, postGlossaryTerm, deleteGlossaryTerm } from './glossary-term';
-import { addingUserToGroup } from './user-access';
+import { addingUserToGroup } from '../users/user-access';
 
 import axios from 'axios';
 
