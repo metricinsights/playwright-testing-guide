@@ -1,0 +1,77 @@
+name: Run Playwright Tests
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  run_tests:
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: us-east-2
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sshpass openssl
+
+      - name: Extract tag version
+        id: tag
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          TAG_NAME=${TAG_NAME#v}
+          echo "version=$TAG_NAME" >> $GITHUB_OUTPUT
+          echo "Tag version: $TAG_NAME"
+
+      - name: Create environment
+        env:
+          CREATE_INSTANCE_SCRIPT: ${{ secrets.CREATE_INSTANCE_SCRIPT }}
+          SSL_SERVER_CRT: ${{ secrets.SSL_SERVER_CRT }}
+          SSL_SERVER_KEY: ${{ secrets.SSL_SERVER_KEY }}
+        run: |
+          echo "$SSL_SERVER_CRT" > /tmp/server.crt
+          echo "$SSL_SERVER_KEY" > /tmp/server.key
+          echo "$CREATE_INSTANCE_SCRIPT" > /tmp/create_instance.sh
+          chmod +x /tmp/create_instance.sh
+          /tmp/create_instance.sh --verbose --version ${{ steps.tag.outputs.version }}
+          if [ -f /tmp/.env.dev ]; then
+            cp /tmp/.env.dev .env.dev
+            echo ".env.dev file copied to workspace"
+          else
+            echo "Warning: .env.dev file not found"
+          fi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.19'
+
+      - name: Run tests
+        run: |
+          if [ ! -f .env.dev ]; then
+            echo "Error: .env.dev file not found in workspace"
+            exit 1
+          fi
+          npm install
+          npx playwright install chromium
+          npx playwright install-deps
+          npm run test:dev dev tests/auth/auth-admin.spec.ts
+          npm run test:dev dev tests/
+
+      - name: Delete environment (cleanup)
+        if: always()
+        env:
+          DELETE_INSTANCE_SCRIPT: ${{ secrets.DELETE_INSTANCE_SCRIPT }}
+        run: |
+          echo "$DELETE_INSTANCE_SCRIPT" > /tmp/delete_instance.sh
+          chmod +x /tmp/delete_instance.sh
+          /tmp/delete_instance.sh || true
