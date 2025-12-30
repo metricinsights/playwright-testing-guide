@@ -292,9 +292,9 @@ test.describe.serial('Dataset API Testing Suite', () => {
 
         // Regular users should be denied access
         expect(response.success).toBe(false);
-        expect(response.status).toBe(401);
+        expect(response.status).toBe(403);
 
-        console.log(`Regular user cannot access dataset list as expected (401 Unauthorized)`);
+        console.log(`Regular user cannot access dataset list as expected (403 Forbidden)`);
       });
 
       test('Verify both user types can access dataset data after permission grant', async () => {

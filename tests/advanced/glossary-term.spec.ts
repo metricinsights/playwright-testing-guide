@@ -187,7 +187,7 @@ test.describe.serial('Checks', () => {
         } catch (error) {
           if (axios.isAxiosError(error) && error.response) {
             expect(error.response.status).toBe(403);
-            expect(error.response.data).toHaveProperty('message', 'You have no permission to create the Glossary Term');
+            expect(error.response.data).toHaveProperty('message', 'You do not have permission to create a Glossary Term');
 
             console.log(error.response.data, `post is not possible by ${userType}`);
           } else {
