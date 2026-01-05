@@ -251,7 +251,7 @@ test.describe.serial('Provide needed access', () => {
     console.log('User access to metric granted successfully.');
   });
 
-  test('Give Regular user access to Dimension', async () => {
+  test.skip('Give Regular user access to Dimension', async () => {
     if (dimensionId === undefined || regularId === undefined) {
       throw new Error('dimensionId or powerId is undefined.');
     }

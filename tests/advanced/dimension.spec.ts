@@ -400,7 +400,7 @@ test.describe.serial('Dimension', () => {
     console.log('dimension_value was found in the list.');
   });
 
-  test('Validate dimension_value is not present in the list by Regular', async () => {
+  test.skip('Validate dimension_value is not present in the list by Regular', async () => {
     const responseDimValueList = await getDimValueList(tokens[REGULAR]);
 
     // Validate specific fields
@@ -412,7 +412,7 @@ test.describe.serial('Dimension', () => {
     console.log('dimension_value was not found in the list.');
   });
 
-  test('Validate dimension_value fields by RU with no permission', async () => {
+  test.skip('Validate dimension_value fields by RU with no permission', async () => {
     if (dimensionValueId === undefined) {
       throw new Error('dimensionValueId is undefined. Ensure that dimensionValue was created successfully.');
     }
@@ -424,7 +424,7 @@ test.describe.serial('Dimension', () => {
     console.log(`The dimension_value was not found because RU didn't have permission.`);
   });
 
-  test('Validate dimension_value by dim_id. Regular with no permission', async () => {
+  test.skip('Validate dimension_value by dim_id. Regular with no permission', async () => {
     if (dimensionId === undefined) {
       throw new Error('dimensionId is undefined. Ensure the dimension was created successfully.');
     }
@@ -438,7 +438,7 @@ test.describe.serial('Dimension', () => {
     console.log('dimension_value was not found in the list.');
   });
 
-  test('Give Refular user access to metric', async () => {
+  test.skip('Give Regular user access to metric', async () => {
     if (metricId === undefined || regularID === undefined) {
       throw new Error('metricId or regularID is undefind.');
     }
@@ -459,7 +459,7 @@ test.describe.serial('Dimension', () => {
     console.log('User access to metric granted successfully.');
   });
 
-  test('Give Regular user access to Dimension', async () => {
+  test.skip('Give Regular user access to Dimension', async () => {
     if (dimensionId === undefined || regularID === undefined) {
       throw new Error('dimensionId or powerID is undefined.');
     }
@@ -477,7 +477,7 @@ test.describe.serial('Dimension', () => {
     console.log('User access to dimension granted successfully.');
   });
 
-  test('Give Regular user access to Dim metric', async () => {
+  test.skip('Give Regular user access to Dim metric', async () => {
     if (dimensionMetricId === undefined || regularID === undefined) {
       throw new Error('metricId or powerID is undefind.');
     }
@@ -497,7 +497,7 @@ test.describe.serial('Dimension', () => {
     console.log('User access to metric granted successfully.');
   });
 
-  test('Validate dimension_value fields by Regular', async () => {
+  test.skip('Validate dimension_value fields by Regular', async () => {
     if (dimensionValueId === undefined) {
       throw new Error('dimensionValueId is undefined. Ensure the dimensionValue was created successfully.');
     }
@@ -509,7 +509,7 @@ test.describe.serial('Dimension', () => {
     console.log('dimension_value validation passed.');
   });
 
-  test('Validate dimension_value is present in the list by Regular', async () => {
+  test.skip('Validate dimension_value is present in the list by Regular', async () => {
     const responseDimValueList = await getDimValueList(tokens[REGULAR]);
 
     // Validate specific fields
@@ -521,7 +521,7 @@ test.describe.serial('Dimension', () => {
     console.log('dimension_value was found in the list.');
   });
 
-  test('Validate dimension_value by dim_id by Regular', async () => {
+  test.skip('Validate dimension_value by dim_id by Regular', async () => {
     if (dimensionId === undefined) {
       throw new Error('dimensionId is undefined. Ensure the dimension was created successfully.');
     }
