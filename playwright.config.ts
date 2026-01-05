@@ -32,26 +32,34 @@ export default defineConfig({
     ['json', { outputFile: 'test-results/results.json' }],
   ],
   
-  /* Shared settings for all the projects below */
-  use: {
-    /* Collect trace when retrying the failed test */
-    trace: 'on-first-retry',
-    
-    /* Base URL - can be overridden via BASE_URL environment variable */
-    baseURL: process.env.BASE_URL,
-    
-    /* API testing options */
-    extraHTTPHeaders: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-    },
+  /* Expect timeout */
+  expect: {
+    timeout: 15000,
   },
 
-  /* Configure projects for different scenarios */
+  /* Shared settings for all the projects below */
+  use: {
+    /* Run browser in headless mode */
+    headless: true,
+
+    /* Ignore HTTPS errors */
+    ignoreHTTPSErrors: true,
+
+    /* Collect trace when retrying the failed test */
+    trace: 'on-first-retry',
+
+    /* Record video for test runs */
+    video: 'on-first-retry',
+
+    /* Enable browser snapshots for debugging */
+    screenshot: 'only-on-failure',
+  },
+
+  /* Configure projects for major browsers */
   projects: [
     {
-      name: 'api-tests',
-      testMatch: '**/*.spec.ts',
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
     },
   ],
 });

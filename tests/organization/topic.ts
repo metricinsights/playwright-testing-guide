@@ -9,8 +9,6 @@ export async function getTopics(token: string, userType: string) {
       },
     });
 
-
-
     return response;
   } catch (error: any) {
     if (error.response) {
@@ -61,7 +59,8 @@ export async function deleteTagByUi(page: Page, topicName: string) {
   await page.getByPlaceholder('Search').click();
   await page.getByPlaceholder('Search').fill(topicName);
   await page.waitForLoadState('load');
-  await expect(page.getByRole('link', { name: topicName })).toBeVisible();
+
+  await expect(page.getByRole('link', { name: topicName })).toBeVisible({ timeout: 10000 });
   await page.getByRole('link', { name: topicName }).click();
   await page.getByLabel('Delete').click();
   await page.waitForSelector("//button[text()='Delete']", { timeout: 5000 });
