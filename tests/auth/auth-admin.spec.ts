@@ -5,7 +5,7 @@ test('should retrieve Admin token successfully', async () => {
   const {
     data: { token },
     status,
-  } = await getToken(process.env.USERNAME_ADMIN!);
+  } = await getToken(process.env.DEFAULT_USERNAME_ADMIN!);
 
   expect(token).not.toBeNull();
   expect(status).toBe(200);
