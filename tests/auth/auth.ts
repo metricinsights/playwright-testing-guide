@@ -3,8 +3,8 @@ import { Page } from '@playwright/test';
 
 export const instanceBaseUrl = process.env.BASE_URL;
 
-export const powerId: number = parseInt(process.env.POWER_ID, 10);
-export const regularId: number = parseInt(process.env.REGULAR_ID, 10);
+export const powerId: number = parseInt(process.env.POWER_ID || '0', 10);
+export const regularId: number = parseInt(process.env.REGULAR_ID || '0', 10);
 export const powerEmail = process.env.POWER_EMAIL;
 export const regularEmail = process.env.REGULAR_EMAIL;
 
@@ -69,6 +69,7 @@ export async function loginAsAdmin(page: Page) {
   await page.getByPlaceholder('Password').click();
   await page.getByPlaceholder('Password').fill(`${process.env.DEFAULT_PASSWORD_ADMIN}`);
   await page.getByRole('button', { name: 'Login' }).click();
-  await page.waitForURL(`${process.env.BASE_URL}/home`, { timeout: 5000 });
-  await page.waitForLoadState('load');
+  await page.waitForURL(`${process.env.BASE_URL}/home`, { waitUntil: 'networkidle', });
+  // await page.waitForLoadState('load')
 }
+

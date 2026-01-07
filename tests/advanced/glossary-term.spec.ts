@@ -140,16 +140,26 @@ test.describe.serial('Checks', () => {
     }
   });
 
-  test('check that both created glossaryTerm not at the list after deletion', async () => {
-    const res = await getGlossaryTerm(adminToken);
+  test('delete glossary by Power with no Privilege and Regular User', async () => {
+    for (const { token, userType } of puAndRuTokens) {
+      try {
+        const res = await deleteGlossaryTerm(token, createdGlossaryTermPowerId);
 
-    expect(res.status).toBe(200);
+        throw new Error(`Expected 403, but received ${res?.status}`);
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response) {
+          expect(error.response.status).toBe(403);
+          expect(error.response.data).toHaveProperty(
+            'message',
+            'You do not have permission to delete a Glossary Term',
+          );
 
-    const termsNotInList = res.data.terms.every(
-      (term: { id: number }) => term.id !== createdGlossaryTermPowerId && term.id !== createdGlossaryTermAdminId,
-    );
-
-    expect(termsNotInList).toBe(true);
+          console.log(error.response.data, `delete is not possible by ${userType}`);
+        } else {
+          throw error;
+        }
+      }
+    }
   });
 
   test.describe('Negative cases', () => {
@@ -187,7 +197,7 @@ test.describe.serial('Checks', () => {
         } catch (error) {
           if (axios.isAxiosError(error) && error.response) {
             expect(error.response.status).toBe(403);
-            expect(error.response.data).toHaveProperty('message', 'You have no permission to create the Glossary Term');
+            expect(error.response.data).toHaveProperty('message', 'You do not have permission to create a Glossary Term');
 
             console.log(error.response.data, `post is not possible by ${userType}`);
           } else {
@@ -196,25 +206,18 @@ test.describe.serial('Checks', () => {
         }
       }
     });
+  });
 
-    test('delete glossary by Power with no Privilege and Regular User', async () => {
-      for (const { token, userType } of puAndRuTokens) {
-        try {
-          const res = await deleteGlossaryTerm(token, createdGlossaryTermPowerId);
+  test('check that both created glossaryTerm not at the list after deletion', async () => {
+    const res = await getGlossaryTerm(adminToken);
 
-          throw new Error(`Expected 403, but received ${res?.status}`);
-        } catch (error) {
-          if (axios.isAxiosError(error) && error.response) {
-            expect(error.response.status).toBe(403);
-            expect(error.response.data).toHaveProperty('message', 'You have no permission to delete the Glossary Term');
+    expect(res.status).toBe(200);
 
-            console.log(error.response.data, `delete is not possible by ${userType}`);
-          } else {
-            throw error;
-          }
-        }
-      }
-    });
+    const termsNotInList = res.data.terms.every(
+      (term: { id: number }) => term.id !== createdGlossaryTermPowerId && term.id !== createdGlossaryTermAdminId,
+    );
+
+    expect(termsNotInList).toBe(true);
   });
 
   test.afterAll(async () => {

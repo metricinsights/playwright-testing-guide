@@ -1,4 +1,4 @@
-import { apiInstance } from '../utils/auth';
+import { apiInstance } from '../auth/auth';
 import * as crypto from 'crypto';
 
 
@@ -17,9 +17,9 @@ export async function createCategory(token: string) {
     name: uniqueCatName,
     visible_on_dashboard: 'Y',
     visible_in_search: 'Y',
-    business_owner_id: 'QA_Admin',
-    technical_owner_id: 'QA_Admin',
-    sort_order_owner_id: 'QA_Admin',
+    business_owner_id: process.env.DEFAULT_USERNAME_ADMIN,
+    technical_owner_id: process.env.DEFAULT_USERNAME_ADMIN,
+    sort_order_owner_id: process.env.DEFAULT_USERNAME_ADMIN,
     use_custom_access_denied_message: 'N',
   };
 

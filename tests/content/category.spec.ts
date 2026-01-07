@@ -1,24 +1,23 @@
+// npm run test:dev stg70 tests/content/category.spec.ts
+
 import { test, expect } from '@playwright/test';
 import { createCategory, deleteCategory } from './category';
-import { ADMIN, POWER, REGULAR, getTokens } from '../utils/auth';
+import { getDefaultAdminToken } from '../users/user';
 
-let tokens: Awaited<ReturnType<typeof getTokens>>;
 let categoryId: number | undefined; // Variable to store categoryId
-let powerID: number | undefined; // Variable to store powerID
-let regularID: number | undefined; // Variable to store regularID
+let adminTokenDefault: string;
 
 // Initialize tokens before running tests
 test.beforeAll(async () => {
-  tokens = await getTokens();
-  powerID = Number(process.env.POWER_ID); // Ensure powerID is loaded and converted to a number
-  regularID = Number(process.env.REGULAR_ID); // Ensure regularID is loaded and converted to a number
+  adminTokenDefault = await getDefaultAdminToken();
+  console.log('Successfully retrieved default admin token');
 });
 
 // Describe block for the suite
 test.describe.serial('Category', () => {
   test('Create Category', async () => {
     // Step 1: Create a new Category
-    const responseCreateCategory = await createCategory(tokens[ADMIN]);
+    const responseCreateCategory = await createCategory(adminTokenDefault);
 
     // Check if response status is 201 and data contains the category
     expect(responseCreateCategory.status).toBe(201);
@@ -39,7 +38,7 @@ test.describe.serial('Category', () => {
     }
 
     // Delete category
-    const responseDeleteCategory = await deleteCategory(tokens[ADMIN], categoryId);
+    const responseDeleteCategory = await deleteCategory(adminTokenDefault, categoryId);
 
     expect(responseDeleteCategory.status).toBe(200);
     console.log(`Category with ID ${categoryId} has been deleted}.`);
@@ -47,7 +46,7 @@ test.describe.serial('Category', () => {
 
   test.afterAll(async () => {
     try {
-      if (categoryId !== undefined) await deleteCategory(tokens[ADMIN], categoryId as number);
+      if (categoryId !== undefined) await deleteCategory(adminTokenDefault, categoryId as number);
     } catch (error) {
       console.log('Failed to delete category in afterAll (might be already deleted)');
     }

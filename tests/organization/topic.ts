@@ -1,5 +1,5 @@
 import { Page, expect } from '@playwright/test';
-import { apiInstance, loginAsAdmin } from '../utils/auth';
+import { apiInstance, loginAsAdmin } from '../auth/auth';
 
 export async function getTopics(token: string, userType: string) {
   try {
@@ -8,8 +8,6 @@ export async function getTopics(token: string, userType: string) {
         Token: token,
       },
     });
-
-
 
     return response;
   } catch (error: any) {
@@ -48,7 +46,7 @@ export async function createTagByUi(page: Page, topicName: string) {
   await page.getByRole('textbox').fill(topicName);
   await page.locator('[data-test="popup_p_grid_popup_topicGrid_ok_button"]').click();
 
-  console.log('tag created=)');
+  console.log('Tag created successfully');
 }
 
 export async function deleteTagByUi(page: Page, topicName: string) {
@@ -61,11 +59,10 @@ export async function deleteTagByUi(page: Page, topicName: string) {
   await page.getByPlaceholder('Search').click();
   await page.getByPlaceholder('Search').fill(topicName);
   await page.waitForLoadState('load');
-  await expect(page.getByRole('link', { name: topicName })).toBeVisible();
-  await page.getByRole('link', { name: topicName }).click();
-  await page.getByLabel('Delete').click();
-  await page.waitForSelector("//button[text()='Delete']", { timeout: 5000 });
-  await page.locator("//button[text()='Delete']").click();
 
-  console.log('tag deleted=)');
+  await page.getByRole('link', { name: topicName }).click();
+  await page.locator('[data-test="form_button_delete"]').click();
+  await page.locator('[data-test="popup_Delete Tag_ok_button"]').click();
+
+  console.log('Tag deleted successfully');
 }

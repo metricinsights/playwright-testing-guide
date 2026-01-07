@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { apiInstance } from '../utils/auth';
+import { apiInstance } from '../auth/auth';
 
 // Function to create a Dimension Value and return its ID
 export async function createDimensionValue(token: string, dimensionId: number) {

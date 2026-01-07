@@ -1,4 +1,4 @@
-import { apiInstance, powerId } from '../utils/auth';
+import { apiInstance, powerId } from '../auth/auth';
 import * as crypto from 'crypto';
 import { AxiosResponse } from 'axios';
 
@@ -44,20 +44,29 @@ export async function accessToDimension(token: string, dimensionId: number, user
 
 //groupMember
 export async function addingUserToGroup(token: string, user: number, group: number): Promise<AxiosResponse> {
-  const response = await apiInstance.post(
-    '/api/user_group_member/',
-    {
-      user: user,
-      group: group,
-    },
-    {
-      headers: {
-        Token: token,
+  try {
+    const response = await apiInstance.post(
+      '/api/user_group_member/',
+      {
+        user: user,
+        group: group,
       },
-    },
-  );
+      {
+        headers: {
+          Token: token,
+        },
+      },
+    );
 
-  return response;
+    return response;
+  } catch (error: any) {
+    // Handle 400 error (user might already be in the group)
+    if (error.response?.status === 400) {
+      console.log(`User ${user} may already be in group ${group} - continuing`);
+      return error.response;
+    }
+    throw error;
+  }
 }
 
 export async function deleteUserFromGroup(token: string, id: number) {
