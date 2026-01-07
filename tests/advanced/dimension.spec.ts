@@ -16,7 +16,7 @@ import { ADMIN, POWER, REGULAR, getTokens } from '../utils/auth';
 import { createCategory, deleteCategory } from '../content/category';
 import { createMetric, enableMetric, collectMetric, updateMetric, deleteMetric } from '../content/metric';
 import { accessToMetric, accessToDimension } from '../users/user-access';
-import { getDefaultAdminToken, setupUsersAndTokens, cleanupUsers, createUser, getToken, deleteUser } from '../users/user';
+import { getDefaultAdminToken, setupUsersAndTokens } from '../users/user';
 import { addingUserToGroup } from '../users/user-access';
 
 let tokens: Awaited<ReturnType<typeof getTokens>>;
