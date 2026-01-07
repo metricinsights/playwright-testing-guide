@@ -1,11 +1,15 @@
 import { test, expect } from '@playwright/test';
-import { ADMIN, getTokens, POWER, REGULAR } from '../utils/auth';
 import { getTopics, checkRequestById, createTagByUi, deleteTagByUi } from './topic';
+import { getDefaultAdminToken, setupUsersAndTokens } from '../users/user';
 
-let tokens: Awaited<ReturnType<typeof getTokens>>; // have to be in the each file for getToken
 let firstIdAdmin: number | undefined;
 let firstIdPower: number | undefined;
 let firstIdRegular: number | undefined;
+let users: { id: string; username: string; token: string; type: 'administrator' | 'power' | 'regular' }[] = [];
+let adminTokenDefault: string;
+let adminToken: string;
+let powerToken: string;
+let regularToken: string;
 
 const randomNumber = Math.floor(1000 + Math.random() * 9000);
 const topicName = `Playwright_Topic_${randomNumber}`;
@@ -13,26 +17,43 @@ const topicName = `Playwright_Topic_${randomNumber}`;
 //має бути axios npm run test:dev stg70 або npm run test:dev stg70 topic.spec.ts
 
 test.beforeAll(async () => {
-  // have to be in the each file for getToken
-  tokens = await getTokens();
+
 });
 
 test.describe.serial('GET /api/topic', () => {
+  test('Create users and get tokens', async () => {
+    adminTokenDefault = await getDefaultAdminToken();
+    console.log('Successfully retrieved default admin token');
+
+    //Creating Admin / PU / RU
+    users = await setupUsersAndTokens(adminTokenDefault);
+
+    adminToken = users.find((user) => user.type === 'administrator')?.token || '';
+    powerToken = users.find((user) => user.type === 'power')?.token || '';
+    regularToken = users.find((user) => user.type === 'regular')?.token || '';
+
+    expect(adminToken).toBeDefined();
+    expect(powerToken).toBeDefined();
+    expect(regularToken).toBeDefined();
+
+    console.log(`Successfully created ${users.length} test users`);
+  });
+
   test('Create Tag by UI', async ({ page }) => {
     await createTagByUi(page, topicName);
     await page.close();
   });
 
   test('Take first tagID from GET request', async () => {
-    const responseAdmin = await getTopics(tokens[ADMIN], 'Admin');
+    const responseAdmin = await getTopics(adminToken, 'Admin');
 
     firstIdAdmin = responseAdmin.data.topics[0].id;
 
-    const responsePower = await getTopics(tokens[POWER], 'Power');
+    const responsePower = await getTopics(powerToken, 'Power');
 
     firstIdPower = responsePower.data.topics[0].id;
 
-    const responseRegular = await getTopics(tokens[REGULAR], 'Regular');
+    const responseRegular = await getTopics(regularToken, 'Regular');
 
     firstIdRegular = responseRegular.data.topics[0].id;
 
@@ -48,9 +69,9 @@ test.describe.serial('GET /api/topic', () => {
 
   test('Parallel checkRequestById', async () => {
     const [responseAdmin, responsePower, responseRegular] = await Promise.all([
-      checkRequestById('Admin', firstIdAdmin, tokens[ADMIN]),
-      checkRequestById('Power', firstIdPower, tokens[POWER]),
-      checkRequestById('Regular', firstIdRegular, tokens[REGULAR]),
+      checkRequestById('Admin', firstIdAdmin, adminToken),
+      checkRequestById('Power', firstIdPower, powerToken),
+      checkRequestById('Regular', firstIdRegular, regularToken),
     ]);
 
     expect(responseAdmin.data).toHaveProperty('topic');

@@ -4,9 +4,8 @@ import { createMetric, enableMetric, collectMetric, updateMetric, deleteMetric }
 import { accessToMetric, accessToDimension, createGroup, deleteGroup } from './user-access';
 import { createDimension, deleteDimension } from '../advanced/dimension';
 import { createDimensionValue } from '../advanced/dimension-value';
-import { ADMIN, getTokens, powerId, regularId } from '../utils/auth';
+import { getDefaultAdminToken, setupUsersAndTokens } from './user';
 
-let tokens: Awaited<ReturnType<typeof getTokens>>;
 let categoryId: number | undefined; // Variable to store categoryId
 let metricId: number | undefined; // Variable to store metricId
 let dimensionId: number | undefined; // Variable to store dimensionId
@@ -15,19 +14,47 @@ let dimensionMetricId: number | undefined; // Variable to store metricId
 const busAndTechnicalOwner = 'admin'; // Initialize with a default value
 let groupName: string;
 let groupId: number;
+let users: { id: string; username: string; token: string; type: 'administrator' | 'power' | 'regular' }[] = [];
+let adminTokenDefault: string;
+let adminToken: string;
+let powerToken: string;
+let regularToken: string;
+let powerId: number | undefined;
+let regularId: number | undefined;
 
 //npm run test:dev stg70 user-access.spec.ts
 
 // Initialize tokens before running tests
 test.beforeAll(async () => {
-  tokens = await getTokens();
+
 });
 
 // Describe block for the suite
 test.describe.serial('Provide needed access', () => {
+  test('Create users and get tokens', async () => {
+    adminTokenDefault = await getDefaultAdminToken();
+    console.log('Successfully retrieved default admin token');
+
+    //Creating Admin / PU / RU
+    users = await setupUsersAndTokens(adminTokenDefault);
+
+    adminToken = users.find((user) => user.type === 'administrator')?.token || '';
+    powerToken = users.find((user) => user.type === 'power')?.token || '';
+    regularToken = users.find((user) => user.type === 'regular')?.token || '';
+
+    powerId = Number(users.find((user) => user.type === 'power')?.id || 0);
+    regularId = Number(users.find((user) => user.type === 'regular')?.id || 0);
+
+    expect(adminToken).toBeDefined();
+    expect(powerToken).toBeDefined();
+    expect(regularToken).toBeDefined();
+
+    console.log(`Successfully created ${users.length} test users`);
+  });
+
   test('Create Category', async () => {
     // Step 1: Create a new Category
-    const responseCreateCategory = await createCategory(tokens[ADMIN]);
+    const responseCreateCategory = await createCategory(adminToken);
 
     // Check if response status is 201 and data contains the category
     expect(responseCreateCategory.status).toBe(201);
@@ -48,7 +75,7 @@ test.describe.serial('Provide needed access', () => {
     }
 
     // Step 1: Create a new Metric
-    const responseCreateMetric = await createMetric(tokens[ADMIN], categoryId, busAndTechnicalOwner);
+    const responseCreateMetric = await createMetric(adminToken, categoryId, busAndTechnicalOwner);
 
     // Check if response status is 201 and data contains the metric
     expect(responseCreateMetric.status).toBe(201);
@@ -69,7 +96,7 @@ test.describe.serial('Provide needed access', () => {
     }
 
     // Enable the Metric
-    const responseEnableMetric = await enableMetric(tokens[ADMIN], metricId);
+    const responseEnableMetric = await enableMetric(adminToken, metricId);
 
     expect(responseEnableMetric.status).toBe(200);
     console.log(`Metric with ID ${metricId} has been enabled.`);
@@ -82,7 +109,7 @@ test.describe.serial('Provide needed access', () => {
     }
 
     // Collect the Metric
-    const responseCollectMetric = await collectMetric(tokens[ADMIN], metricId);
+    const responseCollectMetric = await collectMetric(adminToken, metricId);
 
     expect(responseCollectMetric.status).toBe(200);
     console.log(`Metric with ID ${metricId} has been collected.`);
@@ -95,7 +122,7 @@ test.describe.serial('Provide needed access', () => {
     }
 
     // Update the Metric
-    const responseUpdateMetric = await updateMetric(tokens[ADMIN], metricId);
+    const responseUpdateMetric = await updateMetric(adminToken, metricId);
 
     expect(responseUpdateMetric.status).toBe(200);
     console.log(`Metric with ID ${metricId} has been updated.`);
@@ -103,7 +130,7 @@ test.describe.serial('Provide needed access', () => {
 
   test('Create Dimension', async () => {
     // Step 1: Create a new Dimension
-    const responseCreateDimension = await createDimension(tokens[ADMIN]);
+    const responseCreateDimension = await createDimension(adminToken);
 
     // Check if response status is 201 and data contains the metric
     expect(responseCreateDimension.status).toBe(201);
@@ -124,7 +151,7 @@ test.describe.serial('Provide needed access', () => {
     }
 
     // Step 1: Create a new Dimension Value
-    const responseCreateDimensionValue = await createDimensionValue(tokens[ADMIN], dimensionId);
+    const responseCreateDimensionValue = await createDimensionValue(adminToken, dimensionId);
 
     // Check if response status is 201 and data contains the metric
     expect(responseCreateDimensionValue.status).toBe(201);
@@ -147,7 +174,7 @@ test.describe.serial('Provide needed access', () => {
     }
 
     // Step 1: Create a new Metric
-    const responseCreateMetric = await createMetric(tokens[ADMIN], categoryId, busAndTechnicalOwner, dimensionId);
+    const responseCreateMetric = await createMetric(adminToken, categoryId, busAndTechnicalOwner, dimensionId);
 
     // Check if response status is 201 and data contains the metric
     expect(responseCreateMetric.status).toBe(201);
@@ -163,12 +190,14 @@ test.describe.serial('Provide needed access', () => {
 
   test('Give Power user access to metric', async () => {
     // Check if metricId is defined before proceeding
-    if (metricId === undefined) {
-      throw new Error('metricId or powerId is undefind.');
+    if (metricId === undefined || powerId === undefined) {
+      throw new Error('metricId or powerId is undefined.');
     }
 
+    console.log(`Attempting to give access: metricId=${metricId}, powerId=${powerId}`);
+
     // Step 1: Add access for the specific user
-    const responseAccessToMetric = await accessToMetric(tokens[ADMIN], metricId);
+    const responseAccessToMetric = await accessToMetric(adminToken, metricId, powerId);
 
     // Check if the status is 200 instead of 201 since the actual response status is 201
     expect(responseAccessToMetric.status).toBe(201);
@@ -192,7 +221,7 @@ test.describe.serial('Provide needed access', () => {
     console.log('dimensionId:', dimensionId); // Log dimensionId
     console.log('powerId:', powerId); // Log powerId
 
-    const responseAccessToDimensionForPower = await accessToDimension(tokens[ADMIN], dimensionId);
+    const responseAccessToDimensionForPower = await accessToDimension(adminToken, dimensionId, powerId);
 
     expect(responseAccessToDimensionForPower.status).toBe(201);
 
@@ -212,7 +241,7 @@ test.describe.serial('Provide needed access', () => {
       throw new Error('metricId or powerId is undefind.');
     }
 
-    const responseAccessToDimMetricForPower = await accessToMetric(tokens[ADMIN], dimensionMetricId, powerId);
+    const responseAccessToDimMetricForPower = await accessToMetric(adminToken, dimensionMetricId, powerId);
 
     // Check if the status is 200 instead of 201 since the actual response status is 201
     expect(responseAccessToDimMetricForPower.status).toBe(201);
@@ -235,7 +264,7 @@ test.describe.serial('Provide needed access', () => {
     }
 
     // Step 1: Add access for the specific user
-    const responseAccessToMetric = await accessToMetric(tokens[ADMIN], metricId, regularId);
+    const responseAccessToMetric = await accessToMetric(adminToken, metricId, regularId);
 
     // Check if the status is 200 instead of 201 since the actual response status is 201
     expect(responseAccessToMetric.status).toBe(201);
@@ -251,7 +280,7 @@ test.describe.serial('Provide needed access', () => {
     console.log('User access to metric granted successfully.');
   });
 
-  test.skip('Give Regular user access to Dimension', async () => {
+  test('Give Regular user access to Dimension', async () => {
     if (dimensionId === undefined || regularId === undefined) {
       throw new Error('dimensionId or powerId is undefined.');
     }
@@ -259,7 +288,7 @@ test.describe.serial('Provide needed access', () => {
     console.log('dimensionId:', dimensionId); // Log dimensionId
     console.log('regularId:', regularId); // Log powerId
 
-    const responseAccessToDimensionForPower = await accessToDimension(tokens[ADMIN], dimensionId, regularId);
+    const responseAccessToDimensionForPower = await accessToDimension(adminToken, dimensionId, regularId);
 
     expect(responseAccessToDimensionForPower.status).toBe(201);
 
@@ -279,7 +308,7 @@ test.describe.serial('Provide needed access', () => {
       throw new Error('metricId or powerId is undefind.');
     }
 
-    const responseAccessToDimMetricForRegular = await accessToMetric(tokens[ADMIN], dimensionMetricId, regularId);
+    const responseAccessToDimMetricForRegular = await accessToMetric(adminToken, dimensionMetricId, regularId);
 
     // Check if the status is 200 instead of 201 since the actual response status is 201
     expect(responseAccessToDimMetricForRegular.status).toBe(201);
@@ -296,7 +325,7 @@ test.describe.serial('Provide needed access', () => {
   });
 
   test('Create group', async () => {
-    const response = await createGroup(tokens[ADMIN]);
+    const response = await createGroup(adminToken);
 
     groupId = response.data.user_group.id;
 
@@ -310,7 +339,7 @@ test.describe.serial('Provide needed access', () => {
   });
 
   test('Delete group', async () => {
-    const response = await deleteGroup(tokens[ADMIN], groupId);
+    const response = await deleteGroup(adminToken, groupId);
 
     expect(response.status).toBe(200);
   });
@@ -322,7 +351,7 @@ test.describe.serial('Provide needed access', () => {
     }
 
     // Delete regular metric
-    const responseDeleteMetric = await deleteMetric(tokens[ADMIN], metricId);
+    const responseDeleteMetric = await deleteMetric(adminToken, metricId);
     expect(responseDeleteMetric.status).toBe(200);
     console.log(`Metric with ID ${metricId} has been deleted}.`);
   });
@@ -334,7 +363,7 @@ test.describe.serial('Provide needed access', () => {
     }
 
     // Delete metric
-    const responseDeleteMetric = await deleteMetric(tokens[ADMIN], dimensionMetricId);
+    const responseDeleteMetric = await deleteMetric(adminToken, dimensionMetricId);
 
     expect(responseDeleteMetric.status).toBe(200);
     console.log(`Metric with ID ${dimensionMetricId} has been deleted.`);
@@ -347,7 +376,7 @@ test.describe.serial('Provide needed access', () => {
     }
 
     // Delete category
-    const responseDeleteCategory = await deleteCategory(tokens[ADMIN], categoryId);
+    const responseDeleteCategory = await deleteCategory(adminToken, categoryId);
 
     expect(responseDeleteCategory.status).toBe(200);
     console.log(`Category with ID ${categoryId} has been deleted}.`);
@@ -360,7 +389,7 @@ test.describe.serial('Provide needed access', () => {
     }
 
     // Delete Dimension
-    const responseDeleteDimension = await deleteDimension(tokens[ADMIN], dimensionId);
+    const responseDeleteDimension = await deleteDimension(adminToken, dimensionId);
 
     expect(responseDeleteDimension.status).toBe(200);
     console.log(`Dimension with ID ${dimensionId} has been deleted}.`);
@@ -368,31 +397,31 @@ test.describe.serial('Provide needed access', () => {
 
   test.afterAll(async () => {
     try {
-      if (dimensionMetricId !== undefined) await deleteMetric(tokens[ADMIN], dimensionMetricId as number);
+      if (dimensionMetricId !== undefined) await deleteMetric(adminToken, dimensionMetricId as number);
     } catch (error) {
       console.log('Failed to delete dimension metric in afterAll (might be already deleted)');
     }
 
     try {
-      if (groupId !== undefined) await deleteGroup(tokens[ADMIN], groupId);
+      if (groupId !== undefined) await deleteGroup(adminToken, groupId);
     } catch (error) {
       console.log('Failed to delete group in afterAll (might be already deleted)');
     }
 
     try {
-      if (metricId !== undefined) await deleteMetric(tokens[ADMIN], metricId as number);
+      if (metricId !== undefined) await deleteMetric(adminToken, metricId as number);
     } catch (error) {
       console.log('Failed to delete metric in afterAll (might be already deleted)');
     }
 
     try {
-      if (categoryId !== undefined) await deleteCategory(tokens[ADMIN], categoryId as number);
+      if (categoryId !== undefined) await deleteCategory(adminToken, categoryId as number);
     } catch (error) {
       console.log('Failed to delete category in afterAll (might be already deleted)');
     }
 
     try {
-      if (dimensionId !== undefined) await deleteDimension(tokens[ADMIN], dimensionId as number);
+      if (dimensionId !== undefined) await deleteDimension(adminToken, dimensionId as number);
     } catch (error) {
       console.log('Failed to delete dimension in afterAll (might be already deleted)');
     }

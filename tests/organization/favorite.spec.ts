@@ -10,10 +10,8 @@ import {
 import { createCategory, deleteCategory } from '../content/category';
 import { createMetric, enableMetric, collectMetric, updateMetric, deleteMetric } from '../content/metric';
 import { addingUserToGroup, createGroup } from '../users/user-access';
-import { ADMIN, POWER, REGULAR, getTokens } from '../utils/auth';
 import { getDefaultAdminToken, setupUsersAndTokens, cleanupUsers } from '../users/user';
 
-let tokens: Awaited<ReturnType<typeof getTokens>>;
 let adminFavoriteFolderId: number | undefined; // Variable to store Admin favoriteFolderId
 let powerFavoriteFolderId: number | undefined; // Variable to store Power favoriteFolderId
 let regularFavoriteFolderId: number | undefined; // Variable to store Regular favoriteFolderId
@@ -42,7 +40,7 @@ let users: {
 
 // Initialize tokens before running tests
 test.beforeAll(async () => {
-  tokens = await getTokens();
+
 });
 
 // Describe block for the suite
@@ -66,14 +64,10 @@ test.describe.serial('Favorite Folder API Tests', () => {
     expect(powerToken).toBeDefined();
     expect(regularToken).toBeDefined();
 
-    tokens = {
-      admin: adminToken,
-      power: powerToken,
-      regular: regularToken,
-    };
+    console.log(`Successfully created ${users.length} test users`);
 
     //Create group with all access for the user
-    const response3 = await createGroup(adminTokenDefault, 'yes');
+    const response3 = await createGroup(adminToken, 'yes');
     createdGroupId = response3.data.user_group.id;
     groupName = response3.data.user_group.name;
     console.log(`Created group ID: ${createdGroupId}, Name: ${groupName}`);
@@ -88,7 +82,7 @@ test.describe.serial('Favorite Folder API Tests', () => {
 
   test('Create favorite folder', async () => {
     // Step 1: Create a new favorite folder
-    const responseCFF = await createFavoriteFolder(tokens[ADMIN]);
+    const responseCFF = await createFavoriteFolder(adminToken);
 
     // Check if response status is 201 and data contains the favorite folder
     if (responseCFF.status === 201 && responseCFF.data.favorite) {
@@ -103,7 +97,7 @@ test.describe.serial('Favorite Folder API Tests', () => {
 
   test('Verify that the new folder is present in the list via GET request', async () => {
     // Step 2: Verify the folder exists in the list
-    const folders = await getFavoriteFolders(tokens[ADMIN]);
+    const folders = await getFavoriteFolders(adminToken);
     const found = folders.some((folder: { id: number }) => folder.id === adminFavoriteFolderId);
 
     expect(found).toBe(true);
@@ -112,7 +106,7 @@ test.describe.serial('Favorite Folder API Tests', () => {
 
   test('Create Category', async () => {
     // Step 1: Create a new Category
-    const responseCreateCategory = await createCategory(tokens[ADMIN]);
+    const responseCreateCategory = await createCategory(adminToken);
 
     // Check if response status is 201 and data contains the category
     expect(responseCreateCategory.status).toBe(201);
@@ -133,7 +127,7 @@ test.describe.serial('Favorite Folder API Tests', () => {
     }
 
     // Step 1: Create a new Metric
-    const responseCreateMetric = await createMetric(tokens[ADMIN], categoryId, busAndTechnicalOwner);
+    const responseCreateMetric = await createMetric(adminToken, categoryId, busAndTechnicalOwner);
 
     // Check if response status is 201 and data contains the metric
     expect(responseCreateMetric.status).toBe(201);
@@ -154,7 +148,7 @@ test.describe.serial('Favorite Folder API Tests', () => {
     }
 
     // Enable the Metric
-    const responseEnableMetric = await enableMetric(tokens[ADMIN], metricId);
+    const responseEnableMetric = await enableMetric(adminToken, metricId);
 
     expect(responseEnableMetric.status).toBe(200);
     console.log(`Metric with ID ${metricId} has been enabled.`);
@@ -167,7 +161,7 @@ test.describe.serial('Favorite Folder API Tests', () => {
     }
 
     // Collect the Metric
-    const responseCollectMetric = await collectMetric(tokens[ADMIN], metricId);
+    const responseCollectMetric = await collectMetric(adminToken, metricId);
 
     expect(responseCollectMetric.status).toBe(200);
     console.log(`Metric with ID ${metricId} has been collected.`);
@@ -180,7 +174,7 @@ test.describe.serial('Favorite Folder API Tests', () => {
     }
 
     // Update the Metric
-    const responseUpdateMetric = await updateMetric(tokens[ADMIN], metricId);
+    const responseUpdateMetric = await updateMetric(adminToken, metricId);
 
     expect(responseUpdateMetric.status).toBe(200);
     console.log(`Metric with ID ${metricId} has been updated.`);
@@ -197,7 +191,7 @@ test.describe.serial('Favorite Folder API Tests', () => {
     }
 
     // Add metric to FF
-    const responseAddMetricToFavorite = await addMetricToFavorite(tokens[ADMIN], adminFavoriteFolderId, metricId);
+    const responseAddMetricToFavorite = await addMetricToFavorite(adminToken, adminFavoriteFolderId, metricId);
 
     expect(responseAddMetricToFavorite.status).toBe(200);
     console.log(`Metric with ID ${metricId} has been added to favorite folder with ID ${adminFavoriteFolderId}.`);
@@ -212,7 +206,7 @@ test.describe.serial('Favorite Folder API Tests', () => {
     }
 
     // Make API call to get the favorite folder elements
-    const responseIsMetricInFF = await isMetricInFF(tokens[ADMIN], adminFavoriteFolderId);
+    const responseIsMetricInFF = await isMetricInFF(adminToken, adminFavoriteFolderId);
 
     // Access the favorite_elements array from the response data
     const favoriteElements = responseIsMetricInFF.data.favorite_elements;
@@ -236,7 +230,7 @@ test.describe.serial('Favorite Folder API Tests', () => {
     }
 
     // Delete metric from FF
-    const responseDeleteMetricFromFavorite = await deleteMetricFromFavorite(tokens[ADMIN], 
+    const responseDeleteMetricFromFavorite = await deleteMetricFromFavorite(adminToken, 
       adminFavoriteFolderId, metricId);
 
     expect(responseDeleteMetricFromFavorite.status).toBe(200);
@@ -252,7 +246,7 @@ test.describe.serial('Favorite Folder API Tests', () => {
     }
 
     // Make API call to get the favorite folder elements
-    const responseIsMetricInFF = await isMetricInFF(tokens[ADMIN], adminFavoriteFolderId);
+    const responseIsMetricInFF = await isMetricInFF(adminToken, adminFavoriteFolderId);
 
     // Access the favorite_elements array from the response data
     const favoriteElements = responseIsMetricInFF.data.favorite_elements;
@@ -274,14 +268,14 @@ test.describe.serial('Favorite Folder API Tests', () => {
     }
 
     // Delete metric
-    const responseDeleteFF = await deleteFF(tokens[ADMIN], adminFavoriteFolderId);
+    const responseDeleteFF = await deleteFF(adminToken, adminFavoriteFolderId);
 
     expect(responseDeleteFF.status).toBe(200);
     console.log(`FF with ID ${adminFavoriteFolderId} has been deleted}.`);
   });
   test('Verify that the new folder is NOT in the list via GET request', async () => {
     // Step 2: Verify the folder doesn't exist in the list
-    const folders = await getFavoriteFolders(tokens[ADMIN]);
+    const folders = await getFavoriteFolders(adminToken);
     const found = folders.some((folder: { id: number }) => folder.id === adminFavoriteFolderId);
 
     expect(found).toBe(false);
@@ -290,7 +284,7 @@ test.describe.serial('Favorite Folder API Tests', () => {
 
   test('Create favorite folder by Power', async () => {
     // Step 1: Create a new favorite folder
-    const responseCFF = await createFavoriteFolder(tokens[POWER]);
+    const responseCFF = await createFavoriteFolder(powerToken);
 
     // Check if response status is 201 and data contains the favorite folder
     if (responseCFF.status === 201 && responseCFF.data.favorite) {
@@ -305,7 +299,7 @@ test.describe.serial('Favorite Folder API Tests', () => {
 
   test('Verify that the new folder is present in the list via GET request by Power', async () => {
     // Step 2: Verify the folder exists in the list
-    const folders = await getFavoriteFolders(tokens[POWER]);
+    const folders = await getFavoriteFolders(powerToken);
     const found = folders.some((folder: { id: number }) => folder.id === powerFavoriteFolderId);
 
     expect(found).toBe(true);
@@ -321,7 +315,7 @@ test.describe.serial('Favorite Folder API Tests', () => {
     }
 
     // Add metric to FF
-    const responseAddMetricToFavorite = await addMetricToFavorite(tokens[POWER], powerFavoriteFolderId, metricId);
+    const responseAddMetricToFavorite = await addMetricToFavorite(powerToken, powerFavoriteFolderId, metricId);
 
     expect(responseAddMetricToFavorite.status).toBe(200);
     console.log(`Metric with ID ${metricId} has been added to favorite folder with ID ${powerFavoriteFolderId}.`);
@@ -336,7 +330,7 @@ test.describe.serial('Favorite Folder API Tests', () => {
     }
 
     // Make API call to get the favorite folder elements
-    const responseIsMetricInFF = await isMetricInFF(tokens[POWER], powerFavoriteFolderId);
+    const responseIsMetricInFF = await isMetricInFF(powerToken, powerFavoriteFolderId);
 
     // Access the favorite_elements array from the response data
     const favoriteElements = responseIsMetricInFF.data.favorite_elements;
@@ -360,7 +354,7 @@ test.describe.serial('Favorite Folder API Tests', () => {
     }
 
     // Delete metric from FF
-    const responseDeleteMetricFromFavorite = await deleteMetricFromFavorite(tokens[POWER], 
+    const responseDeleteMetricFromFavorite = await deleteMetricFromFavorite(powerToken, 
       powerFavoriteFolderId, metricId);
 
     expect(responseDeleteMetricFromFavorite.status).toBe(200);
@@ -376,7 +370,7 @@ test.describe.serial('Favorite Folder API Tests', () => {
     }
 
     // Make API call to get the favorite folder elements
-    const responseIsMetricInFF = await isMetricInFF(tokens[POWER], powerFavoriteFolderId);
+    const responseIsMetricInFF = await isMetricInFF(powerToken, powerFavoriteFolderId);
 
     // Access the favorite_elements array from the response data
     const favoriteElements = responseIsMetricInFF.data.favorite_elements;
@@ -398,7 +392,7 @@ test.describe.serial('Favorite Folder API Tests', () => {
     }
 
     // Delete metric
-    const responseDeleteFF = await deleteFF(tokens[POWER], powerFavoriteFolderId);
+    const responseDeleteFF = await deleteFF(powerToken, powerFavoriteFolderId);
 
     expect(responseDeleteFF.status).toBe(200);
     console.log(`FF with ID ${powerFavoriteFolderId} has been deleted}.`);
@@ -406,7 +400,7 @@ test.describe.serial('Favorite Folder API Tests', () => {
 
   test('Verify that the new folder is NOT in the list via GET request by Power', async () => {
     // Step 2: Verify the folder doesn't exist in the list
-    const folders = await getFavoriteFolders(tokens[POWER]);
+    const folders = await getFavoriteFolders(powerToken);
     const found = folders.some((folder: { id: number }) => folder.id === powerFavoriteFolderId);
     expect(found).toBe(false);
     console.log(`FF with ID ${powerFavoriteFolderId} is not in the list.`);
@@ -416,7 +410,7 @@ test.describe.serial('Favorite Folder API Tests', () => {
 
   test('Create favorite folder by Regular', async () => {
     // Step 1: Create a new favorite folder
-    const responseCFF = await createFavoriteFolder(tokens[REGULAR]);
+    const responseCFF = await createFavoriteFolder(regularToken);
 
     // Check if response status is 201 and data contains the favorite folder
     if (responseCFF.status === 201 && responseCFF.data.favorite) {
@@ -431,7 +425,7 @@ test.describe.serial('Favorite Folder API Tests', () => {
 
   test('Verify that the new folder is present in the list via GET request by Regular', async () => {
     // Step 2: Verify the folder exists in the list
-    const folders = await getFavoriteFolders(tokens[REGULAR]);
+    const folders = await getFavoriteFolders(regularToken);
     const found = folders.some((folder: { id: number }) => folder.id === regularFavoriteFolderId);
     expect(found).toBe(true);
     console.log(`FF with ID ${regularFavoriteFolderId} found in the list.`);
@@ -446,7 +440,7 @@ test.describe.serial('Favorite Folder API Tests', () => {
     }
 
     // Add metric to FF
-    const responseAddMetricToFavorite = await addMetricToFavorite(tokens[REGULAR], regularFavoriteFolderId, metricId);
+    const responseAddMetricToFavorite = await addMetricToFavorite(regularToken, regularFavoriteFolderId, metricId);
 
     expect(responseAddMetricToFavorite.status).toBe(200);
     console.log(`Metric with ID ${metricId} has been added to favorite folder with ID ${regularFavoriteFolderId}.`);
@@ -461,7 +455,7 @@ test.describe.serial('Favorite Folder API Tests', () => {
     }
 
     // Make API call to get the favorite folder elements
-    const responseIsMetricInFF = await isMetricInFF(tokens[REGULAR], regularFavoriteFolderId);
+    const responseIsMetricInFF = await isMetricInFF(regularToken, regularFavoriteFolderId);
 
     // Access the favorite_elements array from the response data
     const favoriteElements = responseIsMetricInFF.data.favorite_elements;
@@ -486,7 +480,7 @@ test.describe.serial('Favorite Folder API Tests', () => {
 
     // Delete metric from FF
     const responseDeleteMetricFromFavorite = await deleteMetricFromFavorite(
-      tokens[REGULAR],
+      regularToken,
       regularFavoriteFolderId,
       metricId,
     );
@@ -504,7 +498,7 @@ test.describe.serial('Favorite Folder API Tests', () => {
     }
 
     // Make API call to get the favorite folder elements
-    const responseIsMetricInFF = await isMetricInFF(tokens[REGULAR], regularFavoriteFolderId);
+    const responseIsMetricInFF = await isMetricInFF(regularToken, regularFavoriteFolderId);
 
     // Access the favorite_elements array from the response data
     const favoriteElements = responseIsMetricInFF.data.favorite_elements;
@@ -526,7 +520,7 @@ test.describe.serial('Favorite Folder API Tests', () => {
     }
 
     // Delete metric
-    const responseDeleteFF = await deleteFF(tokens[REGULAR], regularFavoriteFolderId);
+    const responseDeleteFF = await deleteFF(regularToken, regularFavoriteFolderId);
 
     expect(responseDeleteFF.status).toBe(200);
     console.log(`FF with ID ${regularFavoriteFolderId} has been deleted}.`);
@@ -534,7 +528,7 @@ test.describe.serial('Favorite Folder API Tests', () => {
 
   test('Verify that the new folder is NOT in the list via GET request by Regular', async () => {
     // Step 2: Verify the folder doesn't exist in the list
-    const folders = await getFavoriteFolders(tokens[REGULAR]);
+    const folders = await getFavoriteFolders(regularToken);
     const found = folders.some((folder: { id: number }) => folder.id === regularFavoriteFolderId);
     expect(found).toBe(false);
     console.log(`FF with ID ${regularFavoriteFolderId} is not in the list.`);
@@ -547,7 +541,7 @@ test.describe.serial('Favorite Folder API Tests', () => {
     }
 
     // Delete the metric
-    const responseDeleteMetric = await deleteMetric(tokens[ADMIN], metricId);
+    const responseDeleteMetric = await deleteMetric(adminToken, metricId);
 
     expect(responseDeleteMetric.status).toBe(200);
     console.log(`Metric with ID ${metricId} has been deleted.`);
@@ -560,7 +554,7 @@ test.describe.serial('Favorite Folder API Tests', () => {
     }
 
     // Delete the category
-    const responseDeleteCategory = await deleteCategory(tokens[ADMIN], categoryId);
+    const responseDeleteCategory = await deleteCategory(adminToken, categoryId);
 
     expect(responseDeleteCategory.status).toBe(200);
     console.log(`Category with ID ${categoryId} has been deleted.`);

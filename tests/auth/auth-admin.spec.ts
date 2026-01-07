@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { getToken } from '../utils/auth';
+import { getToken } from './auth';
 
 test('should retrieve Admin token successfully', async () => {
   const {

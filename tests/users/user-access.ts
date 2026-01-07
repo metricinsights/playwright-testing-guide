@@ -1,4 +1,4 @@
-import { apiInstance, powerId } from '../utils/auth';
+import { apiInstance, powerId } from '../auth/auth';
 import * as crypto from 'crypto';
 import { AxiosResponse } from 'axios';
 

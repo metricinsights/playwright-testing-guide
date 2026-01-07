@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { ADMIN, POWER, REGULAR, getTokens, instanceBaseUrl } from '../utils/auth';
+import { ADMIN, POWER, REGULAR, getTokens, instanceBaseUrl } from '../auth/auth';
 import { addingUserToGroup, createGroup, deleteGroup } from '../users/user-access';
 import { cleanupUsers, getDefaultAdminToken, setupUsersAndTokens } from '../users/user';
 import {

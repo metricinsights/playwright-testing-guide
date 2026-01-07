@@ -1,4 +1,4 @@
-import { apiInstance } from '../utils/auth';
+import { apiInstance } from '../auth/auth';
 import axios from 'axios';
 
 export const response412Id = process.env.RESPONSE412_ID;
