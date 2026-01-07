@@ -46,7 +46,7 @@ export async function createTagByUi(page: Page, topicName: string) {
   await page.getByRole('textbox').fill(topicName);
   await page.locator('[data-test="popup_p_grid_popup_topicGrid_ok_button"]').click();
 
-  console.log('tag created=)');
+  console.log('Tag created successfully');
 }
 
 export async function deleteTagByUi(page: Page, topicName: string) {
@@ -60,11 +60,9 @@ export async function deleteTagByUi(page: Page, topicName: string) {
   await page.getByPlaceholder('Search').fill(topicName);
   await page.waitForLoadState('load');
 
-  await expect(page.getByRole('link', { name: topicName })).toBeVisible({ timeout: 10000 });
   await page.getByRole('link', { name: topicName }).click();
-  await page.getByLabel('Delete').click();
-  await page.waitForSelector("//button[text()='Delete']", { timeout: 5000 });
-  await page.locator("//button[text()='Delete']").click();
+  await page.locator('[data-test="form_button_delete"]').click();
+  await page.locator('[data-test="popup_Delete Tag_ok_button"]').click();
 
-  console.log('tag deleted=)');
+  console.log('Tag deleted successfully');
 }
