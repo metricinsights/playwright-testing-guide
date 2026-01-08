@@ -70,6 +70,4 @@ export async function loginAsAdmin(page: Page) {
   await page.getByPlaceholder('Password').fill(`${process.env.DEFAULT_PASSWORD_ADMIN}`);
   await page.getByRole('button', { name: 'Login' }).click();
   await page.waitForURL(`${process.env.BASE_URL}/home`, { waitUntil: 'networkidle', });
-  // await page.waitForLoadState('load')
 }
-

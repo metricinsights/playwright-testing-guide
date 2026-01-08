@@ -8,20 +8,16 @@ import axios from 'axios';
 //npm run test:dev stg70 glossary-term.spec.ts
 
 let users: { id: string; username: string; token: string; type: 'administrator' | 'power' | 'regular' }[] = [];
-
 let adminTokenDefault: string;
 let adminToken: string;
 let powerToken: string;
 let regularToken: string;
-
 let newTokenPower: string;
 let newPowerId: string;
-
 let firstGlossarySection: string;
 let userTokens: { token: string; userType: string }[] = [];
 let createdGlossaryTermAdminId: number;
 let createdGlossaryTermPowerId: number;
-
 let puAndRuTokens: { token: string; userType: string }[] = [];
 
 test.describe.serial('Checks', () => {
@@ -79,7 +75,6 @@ test.describe.serial('Checks', () => {
       expect(resById.status).toBe(200);
 
       console.log('for:', userType, resById.data);
-      //console.log('--------------', firstGlossarySection);
     }
   });
 
@@ -101,8 +96,6 @@ test.describe.serial('Checks', () => {
     const glossaryTermInList = res.data.terms.some((term: { id: number }) => term.id === createdGlossaryTermAdminId);
 
     expect(glossaryTermInList).toBe(true);
-
-    //console.log('----------', glossaryTermInList);
   });
 
   test('post - Create glossaryTerm as POWER with Privilege ', async () => {
@@ -123,8 +116,6 @@ test.describe.serial('Checks', () => {
     const glossaryTermInList = res.data.terms.some((term: { id: number }) => term.id === createdGlossaryTermPowerId);
 
     expect(glossaryTermInList).toBe(true);
-
-    //console.log('----------', glossaryTermInList);
   });
 
   test('delete glossaryTerm as Admin and Power', async () => {
