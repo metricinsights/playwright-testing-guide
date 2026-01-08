@@ -11,6 +11,9 @@ jobs:
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      JENKINS_AWS_ACCESS_KEY_ID: ${{ secrets.JENKINS_AWS_ACCESS_KEY_ID }}
+      JENKINS_AWS_SECRET_ACCESS_KEY: ${{ secrets.JENKINS_AWS_SECRET_ACCESS_KEY }}
+      DELETE_DELAY_SECONDS: ${{ vars.DELETE_DELAY_SECONDS }}
       AWS_DEFAULT_REGION: us-east-2
 
     steps:
@@ -42,7 +45,7 @@ jobs:
           echo "$SSL_SERVER_KEY" > /tmp/server.key
           echo "$CREATE_INSTANCE_SCRIPT" > /tmp/create_instance.sh
           chmod +x /tmp/create_instance.sh
-          /tmp/create_instance.sh --verbose --version ${{ steps.tag.outputs.version }}
+          /tmp/create_instance.sh --version ${{ steps.tag.outputs.version }}
           if [ -f /tmp/.env.dev ]; then
             cp /tmp/.env.dev .env.dev
             echo ".env.dev file copied to workspace"
