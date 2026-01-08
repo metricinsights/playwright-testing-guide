@@ -45,7 +45,7 @@ jobs:
           echo "$SSL_SERVER_KEY" > /tmp/server.key
           echo "$CREATE_INSTANCE_SCRIPT" > /tmp/create_instance.sh
           chmod +x /tmp/create_instance.sh
-          /tmp/create_instance.sh --verbose --version ${{ steps.tag.outputs.version }}
+          /tmp/create_instance.sh --version ${{ steps.tag.outputs.version }}
           if [ -f /tmp/.env.dev ]; then
             cp /tmp/.env.dev .env.dev
             echo ".env.dev file copied to workspace"
