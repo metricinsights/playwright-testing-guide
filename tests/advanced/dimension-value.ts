@@ -14,8 +14,7 @@ export async function createDimensionValue(token: string, dimensionId: number) {
     visible_in_dashboard: 'Y',
   };
 
-  console.log('Creating dimension value with data:', JSON.stringify(createDimensionValue, null, 2));
-  console.log('DimensionId:', dimensionId);
+  console.log(`Creating dimension value "${createDimensionValue.name}" for dimension ID: ${dimensionId}`);
 
   try {
     const responseCreateDimensionValue = await apiInstance.post<{

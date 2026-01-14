@@ -74,7 +74,7 @@ test.describe.serial('Checks', () => {
 
       expect(resById.status).toBe(200);
 
-      console.log('for:', userType, resById.data);
+      console.log(`Glossary term retrieved successfully for ${userType}`);
     }
   });
 
@@ -85,7 +85,7 @@ test.describe.serial('Checks', () => {
 
     createdGlossaryTermAdminId = res.data.term.id;
 
-    console.log(res.data, createdGlossaryTermAdminId);
+    console.log(`Glossary term created by Admin with ID: ${createdGlossaryTermAdminId}`);
   });
 
   test('check that created glossaryTerm at the list by Admin', async () => {
@@ -105,7 +105,7 @@ test.describe.serial('Checks', () => {
 
     createdGlossaryTermPowerId = res.data.term.id;
 
-    console.log(res.data, createdGlossaryTermPowerId);
+    console.log(`Glossary term created by Power user with ID: ${createdGlossaryTermPowerId}`);
   });
 
   test('check that created glossaryTerm at the list by Power', async () => {
