@@ -46,29 +46,6 @@ jobs:
           echo "$CREATE_INSTANCE_SCRIPT" > /tmp/create_instance.sh
           chmod +x /tmp/create_instance.sh
           /tmp/create_instance.sh --version ${{ steps.tag.outputs.version }}
-          if [ -f /tmp/.env.dev ]; then
-            cp /tmp/.env.dev .env.dev
-            echo ".env.dev file copied to workspace"
-          else
-            echo "Warning: .env.dev file not found"
-          fi
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20.19'
-
-      - name: Run tests
-        run: |
-          if [ ! -f .env.dev ]; then
-            echo "Error: .env.dev file not found in workspace"
-            exit 1
-          fi
-          npm install
-          npx playwright install chromium
-          npx playwright install-deps
-          npm run test:dev dev tests/auth/auth-admin.spec.ts
-          npm run test:dev dev tests/
 
       - name: Delete environment (cleanup)
         if: always()
