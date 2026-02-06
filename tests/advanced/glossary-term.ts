@@ -1,4 +1,5 @@
-import { apiInstance } from '../auth/auth';
+import { Page } from '@playwright/test';
+import { apiInstance, loginAsAdmin } from '../auth/auth';
 import axios from 'axios';
 import crypto from 'crypto';
 
@@ -62,5 +63,104 @@ export async function deleteGlossaryTerm(token: string, id: number) {
     }
 
     throw error;
+  }
+}
+
+/**
+ * Creates a Glossary Section via UI.
+ * Returns the name of the created section.
+ */
+export async function createGlossarySectionByUi(page: Page, sectionName: string): Promise<string> {
+  await loginAsAdmin(page);
+
+  // Navigate to Glossary page
+  await page.goto(`${process.env.BASE_URL}/editor/glossary`);
+  await page.waitForLoadState('networkidle');
+
+  // Click on Sections tab
+  await page.locator('[data-test="menu_glossary--tab_section"]').waitFor({ state: 'visible', timeout: 10000 });
+  await page.locator('[data-test="menu_glossary--tab_section"]').click();
+  await page.waitForLoadState('networkidle');
+
+  // Click Add button to create new section
+  const addButton = page.locator('[data-test="grid_editor_glossary_section_grid_buttons_add_button"]');
+  await addButton.waitFor({ state: 'visible',  timeout: 10000  });
+  await addButton.click();
+
+  // Fill section name
+  await page.locator('[data-test="name"] input').waitFor({ state: 'visible', timeout: 5000 });
+  await page.locator('[data-test="name"] input').fill(sectionName);
+
+  // Save the section
+  await page.locator('[data-test="popup_p_grid_popup_topicTypeGrid_ok_button"]').click();
+  await page.waitForLoadState('networkidle');
+
+  console.log(`Glossary section "${sectionName}" created successfully`);
+
+  return sectionName;
+}
+
+/**
+ * Deletes a Glossary Section via UI.
+ */
+export async function deleteGlossarySectionByUi(page: Page, sectionName: string): Promise<void> {
+  await loginAsAdmin(page);
+
+  // Navigate to Glossary Sections
+  await page.goto(`${process.env.BASE_URL}/editor/glossary`);
+  await page.waitForLoadState('networkidle');
+
+  // Click on Sections tab
+  await page.locator('[data-test="menu_glossary--tab_section"]').waitFor({ state: 'visible', timeout: 10000 });
+  await page.locator('[data-test="menu_glossary--tab_section"]').click();
+  await page.waitForLoadState('networkidle');
+
+  // Click on the section to open it
+  await page.getByText(sectionName, { exact: true }).click();
+  await page.waitForLoadState('networkidle');
+
+  // Delete the section
+  await page.locator('[data-test="form_button_delete"]').click();
+  await page.locator('[data-test="popup_Delete Item_ok_button"]').waitFor({ state: 'visible', timeout: 5000 });
+  await page.locator('[data-test="popup_Delete Item_ok_button"]').click();
+  await page.waitForLoadState('networkidle');
+
+  console.log(`Glossary section "${sectionName}" deleted successfully`);
+}
+
+/**
+ * Checks if a Glossary Section exists by name.
+ * Returns the section name if found, null otherwise.
+ */
+export async function getOrCreateGlossarySection(
+  page: Page,
+  token: string,
+  sectionName?: string,
+): Promise<string | null> {
+  // First, try to get existing glossary terms to find a section
+  try {
+    const res = await getGlossaryTerm(token);
+
+    if (res.data.terms && res.data.terms.length > 0) {
+      const existingSection = res.data.terms[0].section;
+      console.log(`Found existing glossary section: ${existingSection}`);
+
+      return existingSection;
+    }
+  } catch {
+    console.log('No existing glossary terms found');
+  }
+
+  // If no existing section found, create one via UI
+  const newSectionName = sectionName || `Playwright_Section_${crypto.randomBytes(4).toString('hex')}`;
+
+  try {
+    await createGlossarySectionByUi(page, newSectionName);
+
+    return newSectionName;
+  } catch (error) {
+    console.error('Failed to create glossary section:', error);
+
+    return null;
   }
 }
