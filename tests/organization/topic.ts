@@ -1,4 +1,4 @@
-import { Page, expect } from '@playwright/test';
+import { Page } from '@playwright/test';
 import { apiInstance, loginAsAdmin } from '../auth/auth';
 
 export async function getTopics(token: string, userType: string) {

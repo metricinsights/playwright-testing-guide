@@ -1,7 +1,7 @@
 import { Page } from '@playwright/test';
 import { apiInstance, loginAsAdmin } from '../auth/auth';
 import axios from 'axios';
-import crypto from 'crypto';
+import { nameGenerators, testLogger } from '../utils/test-helpers';
 
 export async function getGlossaryTerm(token: string, id?: string, baseUrl: string = `/api/glossary_term`) {
   const url = id ? `${baseUrl}/id/${id}` : baseUrl;
@@ -16,7 +16,7 @@ export async function getGlossaryTerm(token: string, id?: string, baseUrl: strin
 }
 
 export async function postGlossaryTerm(token: string, glossarySectionName: string) {
-  const glossaryName = `Playwright_Glossary_${crypto.randomBytes(6).toString('hex')}`;
+  const glossaryName = nameGenerators.glossaryTerm();
   try {
     const response = await apiInstance.post(
       '/api/glossary_term',
@@ -95,7 +95,7 @@ export async function createGlossarySectionByUi(page: Page, sectionName: string)
   await page.locator('[data-test="popup_p_grid_popup_topicTypeGrid_ok_button"]').click();
   await page.waitForLoadState('networkidle');
 
-  console.log(`Glossary section "${sectionName}" created successfully`);
+  testLogger.success(`Glossary section "${sectionName}" created`);
 
   return sectionName;
 }
@@ -125,7 +125,7 @@ export async function deleteGlossarySectionByUi(page: Page, sectionName: string)
   await page.locator('[data-test="popup_Delete Item_ok_button"]').click();
   await page.waitForLoadState('networkidle');
 
-  console.log(`Glossary section "${sectionName}" deleted successfully`);
+  testLogger.cleanup(`Glossary section "${sectionName}" deleted`);
 }
 
 /**
@@ -143,23 +143,23 @@ export async function getOrCreateGlossarySection(
 
     if (res.data.terms && res.data.terms.length > 0) {
       const existingSection = res.data.terms[0].section;
-      console.log(`Found existing glossary section: ${existingSection}`);
+      testLogger.info(`Found existing glossary section: ${existingSection}`);
 
       return existingSection;
     }
   } catch {
-    console.log('No existing glossary terms found');
+    testLogger.info('No existing glossary terms found');
   }
 
   // If no existing section found, create one via UI
-  const newSectionName = sectionName || `Playwright_Section_${crypto.randomBytes(4).toString('hex')}`;
+  const newSectionName = sectionName || nameGenerators.glossarySection();
 
   try {
     await createGlossarySectionByUi(page, newSectionName);
 
     return newSectionName;
   } catch (error) {
-    console.error('Failed to create glossary section:', error);
+    testLogger.error('Failed to create glossary section', error);
 
     return null;
   }

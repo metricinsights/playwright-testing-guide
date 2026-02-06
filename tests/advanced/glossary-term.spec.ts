@@ -72,15 +72,19 @@ test.describe.serial('Checks', () => {
 
   test('Setup glossary section (create via UI if needed)', async ({ page }) => {
     // Try to get existing section from API, or create one via UI
-    glossarySection = await getOrCreateGlossarySection(page, adminToken) || '';
+    const glossarySectionResult = await getOrCreateGlossarySection(page, adminToken);
 
-    expect(glossarySection).not.toBeNull();
+    if (!glossarySectionResult) {
+      throw new Error('Failed to get or create glossary section');
+    }
+
+    glossarySection = glossarySectionResult;
     console.log(`Using glossary section: ${glossarySection}`);
 
     // Check if we created a new section (for cleanup)
     const res = await getGlossaryTerm(adminToken);
 
-    if (res.data.terms.length === 0 && glossarySection) {
+    if (res.data.terms.length === 0) {
       createdSectionName = glossarySection;
       console.log(`Created new section "${createdSectionName}" - will be cleaned up after tests`);
     }

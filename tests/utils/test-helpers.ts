@@ -45,6 +45,9 @@ export const nameGenerators = {
   metric: () => `Playwright_Metric_${randomBytes(TEST_CONSTANTS.RANDOM_BYTES_LENGTH).toString('hex')}`,
   dataset: () => `Playwright_Dataset_${randomBytes(TEST_CONSTANTS.RANDOM_BYTES_LENGTH).toString('hex')}`,
   category: () => `Playwright_Category_${randomBytes(TEST_CONSTANTS.RANDOM_BYTES_LENGTH).toString('hex')}`,
+  glossarySection: () => `Playwright_Section_${randomBytes(TEST_CONSTANTS.RANDOM_BYTES_LENGTH).toString('hex')}`,
+  glossaryTerm: () => `Playwright_Glossary_${randomBytes(TEST_CONSTANTS.RANDOM_BYTES_LENGTH).toString('hex')}`,
+  topic: () => `Playwright_Topic_${randomBytes(TEST_CONSTANTS.RANDOM_BYTES_LENGTH).toString('hex')}`,
 };
 
 // Universal response validation helpers
