@@ -32,7 +32,8 @@ let createdGlossaryTermPowerId: number;
 let puAndRuTokens: { token: string; userType: string }[] = [];
 
 test.describe.serial('Checks', () => {
-  test('Create users and get tokens, added default group for this users', async () => {
+  test.beforeAll(async ({ browser }) => {
+    // Get default admin token
     adminTokenDefault = await getDefaultAdminToken();
     console.log('Successfully retrieved default admin token');
 
@@ -68,25 +69,29 @@ test.describe.serial('Checks', () => {
     const response2 = await addingUserToGroup(adminToken, regularId, 1);
 
     console.log(response2.data, 'RU added to the default group');
-  });
 
-  test('Setup glossary section (create via UI if needed)', async ({ page }) => {
-    // Try to get existing section from API, or create one via UI
-    const glossarySectionResult = await getOrCreateGlossarySection(page, adminToken);
+    // Setup glossary section (create via UI if needed)
+    const glossarySectionSetupPage = await browser.newPage();
 
-    if (!glossarySectionResult) {
-      throw new Error('Failed to get or create glossary section');
-    }
+    try {
+      const glossarySectionResult = await getOrCreateGlossarySection(glossarySectionSetupPage, adminToken);
 
-    glossarySection = glossarySectionResult;
-    console.log(`Using glossary section: ${glossarySection}`);
+      if (!glossarySectionResult) {
+        throw new Error('Failed to get or create glossary section');
+      }
 
-    // Check if we created a new section (for cleanup)
-    const res = await getGlossaryTerm(adminToken);
+      glossarySection = glossarySectionResult;
+      console.log(`Using glossary section: ${glossarySection}`);
 
-    if (res.data.terms.length === 0) {
-      createdSectionName = glossarySection;
-      console.log(`Created new section "${createdSectionName}" - will be cleaned up after tests`);
+      // Check if we created a new section (for cleanup)
+      const glossaryTermsResponse = await getGlossaryTerm(adminToken);
+
+      if (glossaryTermsResponse.data.terms.length === 0) {
+        createdSectionName = glossarySection;
+        console.log(`Created new section "${createdSectionName}" - will be cleaned up after tests`);
+      }
+    } finally {
+      await glossarySectionSetupPage.close();
     }
   });
 
@@ -267,14 +272,14 @@ test.describe.serial('Checks', () => {
 
     // Cleanup the section if we created it
     if (createdSectionName) {
-      const page = await browser.newPage();
+      const cleanupPage = await browser.newPage();
 
       try {
-        await deleteGlossarySectionByUi(page, createdSectionName);
+        await deleteGlossarySectionByUi(cleanupPage, createdSectionName);
       } catch (error) {
         console.warn(`Failed to delete glossary section: ${error}`);
       } finally {
-        await page.close();
+        await cleanupPage.close();
       }
     }
 
