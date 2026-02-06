@@ -14,7 +14,7 @@ let regularToken: string;
 const randomNumber = Math.floor(1000 + Math.random() * 9000);
 const topicName = `Playwright_Topic_${randomNumber}`;
 
-//має бути axios npm run test:dev stg70 або npm run test:dev stg70 topic.spec.ts
+//npm run test:dev staging topic.spec.ts
 
 test.beforeAll(async () => {
 

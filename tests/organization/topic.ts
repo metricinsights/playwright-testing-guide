@@ -37,9 +37,9 @@ export async function createTagByUi(page: Page, topicName: string) {
   await loginAsAdmin(page);
 
   // Open Content menu and navigate to Tags
-  await page.locator('.navbar-menu__root-item:has-text("Content")').waitFor({ state: 'visible', timeout: 10000 });
+  await page.locator('.navbar-menu__root-item:has-text("Content")').waitFor({ state: 'visible' });
   await page.locator('.navbar-menu__root-item:has-text("Content")').click();
-  await page.locator('[data-test="content_tags"]').waitFor({ state: 'visible', timeout: 10000 });
+  await page.locator('[data-test="content_tags"]').waitFor({ state: 'visible' });
   await page.locator('[data-test="content_tags"]').click();
 
   // Wait for page to load and click Add button
@@ -53,8 +53,8 @@ export async function createTagByUi(page: Page, topicName: string) {
   // Wait for either button to be visible
   try {
     await Promise.race([
-      emptyStateAddButton.waitFor({ state: 'visible', timeout: 15000 }),
-      nonEmptyStateAddButton.waitFor({ state: 'visible', timeout: 15000 }),
+      emptyStateAddButton.waitFor({ state: 'visible' }),
+      nonEmptyStateAddButton.waitFor({ state: 'visible' }),
     ]);
   } catch {
     throw new Error('Tags page did not load - Add button not found');
@@ -68,7 +68,7 @@ export async function createTagByUi(page: Page, topicName: string) {
   }
 
   // Fill in the tag name
-  await page.locator('[data-test="name"] input').waitFor({ state: 'visible', timeout: 5000 });
+  await page.locator('[data-test="name"] input').waitFor({ state: 'visible' });
   await page.locator('[data-test="name"] input').fill(topicName);
 
   // Save the tag
@@ -82,9 +82,9 @@ export async function deleteTagByUi(page: Page, topicName: string) {
   await loginAsAdmin(page);
 
   // Open Content menu and navigate to Tags
-  await page.locator('.navbar-menu__root-item:has-text("Content")').waitFor({ state: 'visible', timeout: 10000 });
+  await page.locator('.navbar-menu__root-item:has-text("Content")').waitFor({ state: 'visible' });
   await page.locator('.navbar-menu__root-item:has-text("Content")').click();
-  await page.locator('[data-test="content_tags"]').waitFor({ state: 'visible', timeout: 10000 });
+  await page.locator('[data-test="content_tags"]').waitFor({ state: 'visible' });
   await page.locator('[data-test="content_tags"]').click();
 
   await page.waitForLoadState('networkidle');
@@ -107,7 +107,7 @@ export async function deleteTagByUi(page: Page, topicName: string) {
 
   // Delete the tag
   await page.locator('[data-test="form_button_delete"]').click();
-  await page.locator('[data-test="popup_Delete Tag_ok_button"]').waitFor({ state: 'visible', timeout: 5000 });
+  await page.locator('[data-test="popup_Delete Tag_ok_button"]').waitFor({ state: 'visible' });
   await page.locator('[data-test="popup_Delete Tag_ok_button"]').click();
   await page.waitForLoadState('networkidle');
 

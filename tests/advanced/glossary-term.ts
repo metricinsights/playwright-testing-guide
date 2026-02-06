@@ -78,17 +78,17 @@ export async function createGlossarySectionByUi(page: Page, sectionName: string)
   await page.waitForLoadState('networkidle');
 
   // Click on Sections tab
-  await page.locator('[data-test="menu_glossary--tab_section"]').waitFor({ state: 'visible', timeout: 10000 });
+  await page.locator('[data-test="menu_glossary--tab_section"]').waitFor({ state: 'visible'});
   await page.locator('[data-test="menu_glossary--tab_section"]').click();
   await page.waitForLoadState('networkidle');
 
   // Click Add button to create new section
   const addButton = page.locator('[data-test="grid_editor_glossary_section_grid_buttons_add_button"]');
-  await addButton.waitFor({ state: 'visible',  timeout: 10000  });
+  await addButton.waitFor({ state: 'visible' });
   await addButton.click();
 
   // Fill section name
-  await page.locator('[data-test="name"] input').waitFor({ state: 'visible', timeout: 5000 });
+  await page.locator('[data-test="name"] input').waitFor({ state: 'visible' });
   await page.locator('[data-test="name"] input').fill(sectionName);
 
   // Save the section
@@ -111,7 +111,7 @@ export async function deleteGlossarySectionByUi(page: Page, sectionName: string)
   await page.waitForLoadState('networkidle');
 
   // Click on Sections tab
-  await page.locator('[data-test="menu_glossary--tab_section"]').waitFor({ state: 'visible', timeout: 10000 });
+  await page.locator('[data-test="menu_glossary--tab_section"]').waitFor({ state: 'visible'});
   await page.locator('[data-test="menu_glossary--tab_section"]').click();
   await page.waitForLoadState('networkidle');
 
@@ -121,7 +121,7 @@ export async function deleteGlossarySectionByUi(page: Page, sectionName: string)
 
   // Delete the section
   await page.locator('[data-test="form_button_delete"]').click();
-  await page.locator('[data-test="popup_Delete Item_ok_button"]').waitFor({ state: 'visible', timeout: 5000 });
+  await page.locator('[data-test="popup_Delete Item_ok_button"]').waitFor({ state: 'visible' });
   await page.locator('[data-test="popup_Delete Item_ok_button"]').click();
   await page.waitForLoadState('networkidle');
 

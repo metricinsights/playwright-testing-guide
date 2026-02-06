@@ -11,7 +11,7 @@ import { addingUserToGroup } from '../users/user-access';
 
 import axios from 'axios';
 
-//npm run test:dev stg70 glossary-term.spec.ts
+//npm run test:dev staging glossary-term.spec.ts
 
 let users: { id: string; username: string; token: string; type: 'administrator' | 'power' | 'regular' }[] = [];
 
@@ -23,7 +23,7 @@ let regularToken: string;
 let newTokenPower: string;
 let newPowerId: string;
 
-let glossarySection: string | null;
+let glossarySection: string;
 let createdSectionName: string | null = null; // Track if we created the section (for cleanup)
 let userTokens: { token: string; userType: string }[] = [];
 let createdGlossaryTermAdminId: number;
@@ -72,7 +72,7 @@ test.describe.serial('Checks', () => {
 
   test('Setup glossary section (create via UI if needed)', async ({ page }) => {
     // Try to get existing section from API, or create one via UI
-    glossarySection = await getOrCreateGlossarySection(page, adminToken);
+    glossarySection = await getOrCreateGlossarySection(page, adminToken) || '';
 
     expect(glossarySection).not.toBeNull();
     console.log(`Using glossary section: ${glossarySection}`);
@@ -88,7 +88,7 @@ test.describe.serial('Checks', () => {
 
   test('get glossaryTerm and glossaryTerm_by_ID as Admin / PU / RU', async () => {
     // First create a term so we have something to test with
-    const createRes = await postGlossaryTerm(adminToken, glossarySection!);
+    const createRes = await postGlossaryTerm(adminToken, glossarySection);
 
     expect(createRes.status).toBe(201);
 
@@ -116,7 +116,7 @@ test.describe.serial('Checks', () => {
   });
 
   test('post - Create glossaryTerm as Admin', async () => {
-    const res = await postGlossaryTerm(adminToken, glossarySection!);
+    const res = await postGlossaryTerm(adminToken, glossarySection);
 
     expect(res.status).toBe(201);
 
@@ -138,7 +138,7 @@ test.describe.serial('Checks', () => {
   });
 
   test('post - Create glossaryTerm as POWER with Privilege ', async () => {
-    const res = await postGlossaryTerm(powerToken, glossarySection!);
+    const res = await postGlossaryTerm(powerToken, glossarySection);
 
     expect(res.status).toBe(201);
 
@@ -223,7 +223,7 @@ test.describe.serial('Checks', () => {
 
       for (const { token, userType } of puAndRuTokens) {
         try {
-          const res = await postGlossaryTerm(token, glossarySection!);
+          const res = await postGlossaryTerm(token, glossarySection);
 
           throw new Error(`Expected 403, but received ${res?.status}`);
         } catch (error) {
