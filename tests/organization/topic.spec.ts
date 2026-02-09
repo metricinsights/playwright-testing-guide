@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { getTopics, checkRequestById, createTagByUi, deleteTagByUi } from './topic';
-import { getDefaultAdminToken, setupUsersAndTokens } from '../users/user';
-import { nameGenerators } from '../utils/test-helpers';
+import { initializeTestUsers, nameGenerators } from '../utils/test-helpers';
 
 let firstIdAdmin: number | undefined;
 let firstIdPower: number | undefined;
@@ -22,21 +21,13 @@ test.beforeAll(async () => {
 
 test.describe.serial('GET /api/topic', () => {
   test('Create users and get tokens', async () => {
-    adminTokenDefault = await getDefaultAdminToken();
-    console.log('Successfully retrieved default admin token');
-
-    //Creating Admin / PU / RU
-    users = await setupUsersAndTokens(adminTokenDefault);
-
-    adminToken = users.find((user) => user.type === 'administrator')?.token || '';
-    powerToken = users.find((user) => user.type === 'power')?.token || '';
-    regularToken = users.find((user) => user.type === 'regular')?.token || '';
-
-    expect(adminToken).toBeDefined();
-    expect(powerToken).toBeDefined();
-    expect(regularToken).toBeDefined();
-
-    console.log(`Successfully created ${users.length} test users`);
+    const userSetup = await initializeTestUsers();
+    
+    adminTokenDefault = userSetup.adminTokenDefault;
+    adminToken = userSetup.adminToken;
+    powerToken = userSetup.powerToken;
+    regularToken = userSetup.regularToken;
+    users = userSetup.users;
   });
 
   test('Create Tag by UI', async ({ page }) => {

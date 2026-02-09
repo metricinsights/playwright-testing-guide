@@ -12,14 +12,11 @@ import {
   getDimValueByIdNoPermission,
 } from './dimension';
 import { createDimensionValue } from './dimension-value';
-import { ADMIN, POWER, REGULAR, getTokens } from '../auth/auth';
 import { createCategory, deleteCategory } from '../content/category';
 import { createMetric, enableMetric, collectMetric, updateMetric, deleteMetric } from '../content/metric';
 import { accessToMetric, accessToDimension } from '../users/user-access';
-import { getDefaultAdminToken, setupUsersAndTokens } from '../users/user';
-import { addingUserToGroup } from '../users/user-access';
+import { initializeTestUsersWithGroup } from '../utils/test-helpers';
 
-let tokens: Awaited<ReturnType<typeof getTokens>>;
 let dimensionId: number | undefined; // Variable to store dimensionId
 let dimensionValueId: number | undefined; // Variable to store dimensionValueId
 let powerId: number | undefined; // Variable to store powerID
@@ -42,41 +39,21 @@ test.beforeAll(async () => {
 
 test.describe.serial('Dimension', () => {
   test('Create users and get tokens, added default group for this users', async () => {
-    adminTokenDefault = await getDefaultAdminToken();
-    console.log('Successfully retrieved default admin token');
-
-    //Creating Admin / PU / RU
-    users = await setupUsersAndTokens(adminTokenDefault);
-
-    adminToken = users.find((user) => user.type === 'administrator')?.token || '';
-    powerToken = users.find((user) => user.type === 'power')?.token || '';
-    regularToken = users.find((user) => user.type === 'regular')?.token || '';
-
-    powerId = Number(users.find((user) => user.type === 'power')?.id || 0);
-    regularId = Number(users.find((user) => user.type === 'regular')?.id || 0);
-
-    console.log(powerId, '- Power User', regularId, '- Regular User');
-
-    expect(adminToken).toBeDefined();
-    expect(powerToken).toBeDefined();
-    expect(regularToken).toBeDefined();
-
-    console.log(`Successfully created ${users.length} test users`);
+    const userSetup = await initializeTestUsersWithGroup(1);
+    
+    adminTokenDefault = userSetup.adminTokenDefault;
+    adminToken = userSetup.adminToken;
+    powerToken = userSetup.powerToken;
+    regularToken = userSetup.regularToken;
+    powerId = userSetup.powerId;
+    regularId = userSetup.regularId;
+    users = userSetup.users;
 
     userTokens = [
       { token: adminToken, userType: 'Admin' },
       { token: powerToken, userType: 'Power User' },
       { token: regularToken, userType: 'Regular User' },
     ];
-
-    //Adding group to the created users
-    const response1 = await addingUserToGroup(adminToken, powerId, 1);
-
-    console.log(response1.data, 'PU added to the default group');
-
-    const response2 = await addingUserToGroup(adminToken, regularId, 1);
-
-    console.log(response2.data, 'RU added to the default group');
   });
   test('Create Category', async () => {
     const responseCreateCategory = await createCategory(adminToken);

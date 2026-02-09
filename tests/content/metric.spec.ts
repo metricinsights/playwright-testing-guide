@@ -3,7 +3,7 @@ import { createCategory, deleteCategory } from './category';
 import { createMetric, enableMetric, collectMetric, updateMetric, deleteMetric, validateMetricData } from './metric';
 import { createDimension, deleteDimension } from '../advanced/dimension';
 import { createDimensionValue } from '../advanced/dimension-value';
-import { getDefaultAdminToken, setupUsersAndTokens } from '../users/user';
+import { initializeTestUsers } from '../utils/test-helpers';
 
 let categoryId: number | undefined; // Variable to store categoryId
 let metricId: number | undefined; // Variable to store metricId
@@ -25,17 +25,11 @@ test.beforeAll(async () => {
 // Describe block for the suite
 test.describe.serial('Metric', () => {
   test('Create users and get tokens', async () => {
-    adminTokenDefault = await getDefaultAdminToken();
-    console.log('Successfully retrieved default admin token');
-
-    //Creating Admin / PU / RU
-    users = await setupUsersAndTokens(adminTokenDefault);
-
-    adminToken = users.find((user) => user.type === 'administrator')?.token || '';
-
-    expect(adminToken).toBeDefined();
-
-    console.log(`Successfully created ${users.length} test users`);
+    const userSetup = await initializeTestUsers();
+    
+    adminTokenDefault = userSetup.adminTokenDefault;
+    adminToken = userSetup.adminToken;
+    users = userSetup.users;
   });
 
   test('Create Category', async () => {

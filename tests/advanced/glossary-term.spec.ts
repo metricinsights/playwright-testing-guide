@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { getDefaultAdminToken, setupUsersAndTokens, cleanupUsers, createUser, getToken, deleteUser } from '../users/user';
+import { cleanupUsers, createUser, getToken, deleteUser } from '../users/user';
 import {
   getGlossaryTerm,
   postGlossaryTerm,
@@ -7,7 +7,7 @@ import {
   getOrCreateGlossarySection,
   deleteGlossarySectionByUi,
 } from './glossary-term';
-import { addingUserToGroup } from '../users/user-access';
+import { initializeTestUsersWithGroup } from '../utils/test-helpers';
 
 import axios from 'axios';
 
@@ -30,42 +30,25 @@ let puAndRuTokens: { token: string; userType: string }[] = [];
 
 test.describe.serial('Checks', () => {
   test.beforeAll(async ({ browser }) => {
-    // Get default admin token
-    adminTokenDefault = await getDefaultAdminToken();
-    console.log('Successfully retrieved default admin token');
+    // Get users and tokens with group
+    const userSetup = await initializeTestUsersWithGroup(1);
+    
+    adminTokenDefault = userSetup.adminTokenDefault;
+    adminToken = userSetup.adminToken;
+    powerToken = userSetup.powerToken;
+    regularToken = userSetup.regularToken;
+    users = userSetup.users;
 
-    //Creating Admin / PU / RU
-    users = await setupUsersAndTokens(adminTokenDefault);
-
-    adminToken = users.find((user) => user.type === 'administrator')?.token || '';
-    powerToken = users.find((user) => user.type === 'power')?.token || '';
-    regularToken = users.find((user) => user.type === 'regular')?.token || '';
-
-    const powerId = Number(users.find((user) => user.type === 'power')?.id || 0);
-    const regularId = Number(users.find((user) => user.type === 'regular')?.id || 0);
+    const powerId = userSetup.powerId;
+    const regularId = userSetup.regularId;
 
     console.log(powerId, '- Power User', regularId, '- Regular User');
-
-    expect(adminToken).toBeDefined();
-    expect(powerToken).toBeDefined();
-    expect(regularToken).toBeDefined();
-
-    console.log(`Successfully created ${users.length} test users`);
 
     userTokens = [
       { token: adminToken, userType: 'Admin' },
       { token: powerToken, userType: 'Power User' },
       { token: regularToken, userType: 'Regular User' },
     ];
-
-    //Adding group to the created users
-    const response1 = await addingUserToGroup(adminToken, powerId, 1);
-
-    console.log(response1.data, 'PU added to the default group');
-
-    const response2 = await addingUserToGroup(adminToken, regularId, 1);
-
-    console.log(response2.data, 'RU added to the default group');
 
     // Setup glossary section (create via UI if needed)
     const glossarySectionSetupPage = await browser.newPage();

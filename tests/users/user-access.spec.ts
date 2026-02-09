@@ -4,7 +4,7 @@ import { createMetric, enableMetric, collectMetric, updateMetric, deleteMetric }
 import { accessToMetric, accessToDimension, createGroup, deleteGroup } from './user-access';
 import { createDimension, deleteDimension } from '../advanced/dimension';
 import { createDimensionValue } from '../advanced/dimension-value';
-import { getDefaultAdminToken, setupUsersAndTokens } from './user';
+import { initializeTestUsers } from '../utils/test-helpers';
 
 let categoryId: number | undefined; // Variable to store categoryId
 let metricId: number | undefined; // Variable to store metricId
@@ -32,24 +32,16 @@ test.beforeAll(async () => {
 // Describe block for the suite
 test.describe.serial('Provide needed access', () => {
   test('Create users and get tokens', async () => {
-    adminTokenDefault = await getDefaultAdminToken();
-    console.log('Successfully retrieved default admin token');
-
-    //Creating Admin / PU / RU
-    users = await setupUsersAndTokens(adminTokenDefault);
-
-    adminToken = users.find((user) => user.type === 'administrator')?.token || '';
-    powerToken = users.find((user) => user.type === 'power')?.token || '';
-    regularToken = users.find((user) => user.type === 'regular')?.token || '';
+    const userSetup = await initializeTestUsers();
+    
+    adminTokenDefault = userSetup.adminTokenDefault;
+    adminToken = userSetup.adminToken;
+    powerToken = userSetup.powerToken;
+    regularToken = userSetup.regularToken;
+    users = userSetup.users;
 
     powerId = Number(users.find((user) => user.type === 'power')?.id || 0);
     regularId = Number(users.find((user) => user.type === 'regular')?.id || 0);
-
-    expect(adminToken).toBeDefined();
-    expect(powerToken).toBeDefined();
-    expect(regularToken).toBeDefined();
-
-    console.log(`Successfully created ${users.length} test users`);
   });
 
   test('Create Category', async () => {

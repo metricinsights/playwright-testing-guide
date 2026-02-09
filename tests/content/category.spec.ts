@@ -3,6 +3,7 @@
 import { test, expect } from '@playwright/test';
 import { createCategory, deleteCategory } from './category';
 import { getDefaultAdminToken } from '../users/user';
+import { testLogger } from '../utils/test-helpers';
 
 let categoryId: number | undefined; // Variable to store categoryId
 let adminTokenDefault: string;
@@ -10,7 +11,7 @@ let adminTokenDefault: string;
 // Initialize tokens before running tests
 test.beforeAll(async () => {
   adminTokenDefault = await getDefaultAdminToken();
-  console.log('Successfully retrieved default admin token');
+  testLogger.setup('Retrieved default admin token');
 });
 
 // Describe block for the suite
@@ -25,9 +26,9 @@ test.describe.serial('Category', () => {
     // Ensure that response data contains the 'category' object and extract the ID
     if (responseCreateCategory.data.category.id != null) {
       categoryId = responseCreateCategory.data.category.id;
-      console.log(`Category ID: ${categoryId}`);
+      testLogger.success('Created Category', categoryId);
     } else {
-      console.error('Category creation failed: ID is undefined.');
+      testLogger.error('Category creation failed', 'ID is undefined');
     }
   });
 
@@ -41,7 +42,7 @@ test.describe.serial('Category', () => {
     const responseDeleteCategory = await deleteCategory(adminTokenDefault, categoryId);
 
     expect(responseDeleteCategory.status).toBe(200);
-    console.log(`Category with ID ${categoryId} has been deleted}.`);
+    testLogger.success('Deleted Category', categoryId);
   });
 
   test.afterAll(async () => {

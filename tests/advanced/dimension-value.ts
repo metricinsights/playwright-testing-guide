@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { apiInstance } from '../auth/auth';
+import { testLogger } from '../utils/test-helpers';
 
 // Function to create a Dimension Value and return its ID
 export async function createDimensionValue(token: string, dimensionId: number) {
@@ -14,7 +15,7 @@ export async function createDimensionValue(token: string, dimensionId: number) {
     visible_in_dashboard: 'Y',
   };
 
-  console.log(`Creating dimension value "${createDimensionValue.name}" for dimension ID: ${dimensionId}`);
+  testLogger.info(`Creating dimension value "${createDimensionValue.name}"`, `Dimension ID: ${dimensionId}`);
 
   try {
     const responseCreateDimensionValue = await apiInstance.post<{
