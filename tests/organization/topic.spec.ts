@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { getTopics, checkRequestById, createTagByUi, deleteTagByUi } from './topic';
-import { initializeTestUsers, nameGenerators } from '../utils/test-helpers';
+import { initializeTestUsers, nameGenerators, testLogger } from '../utils/test-helpers';
 
 let firstIdAdmin: number | undefined;
 let firstIdPower: number | undefined;
@@ -87,7 +87,7 @@ test.describe.serial('GET /api/topic', () => {
     expect(response.status).toBe(401);
     expect(response.data).toHaveProperty('message', 'Unauthorized');
 
-    console.log(response.data, response.status);
+    testLogger.info('Unauthorized request without token', `Status: ${response.status}`);
   });
 
   test('Delete Tag by UI', async ({ page }) => {
