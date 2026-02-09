@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { getTopics, checkRequestById, createTagByUi, deleteTagByUi } from './topic';
 import { getDefaultAdminToken, setupUsersAndTokens } from '../users/user';
+import { nameGenerators } from '../utils/test-helpers';
 
 let firstIdAdmin: number | undefined;
 let firstIdPower: number | undefined;
@@ -11,10 +12,9 @@ let adminToken: string;
 let powerToken: string;
 let regularToken: string;
 
-const randomNumber = Math.floor(1000 + Math.random() * 9000);
-const topicName = `Playwright_Topic_${randomNumber}`;
+const topicName = nameGenerators.topic();
 
-//має бути axios npm run test:dev stg70 або npm run test:dev stg70 topic.spec.ts
+//npm run test:dev staging topic.spec.ts
 
 test.beforeAll(async () => {
 

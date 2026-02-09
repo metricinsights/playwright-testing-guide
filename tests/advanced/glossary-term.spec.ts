@@ -1,11 +1,17 @@
 import { test, expect } from '@playwright/test';
 import { getDefaultAdminToken, setupUsersAndTokens, cleanupUsers, createUser, getToken, deleteUser } from '../users/user';
-import { getGlossaryTerm, postGlossaryTerm, deleteGlossaryTerm } from './glossary-term';
+import {
+  getGlossaryTerm,
+  postGlossaryTerm,
+  deleteGlossaryTerm,
+  getOrCreateGlossarySection,
+  deleteGlossarySectionByUi,
+} from './glossary-term';
 import { addingUserToGroup } from '../users/user-access';
 
 import axios from 'axios';
 
-//npm run test:dev stg70 glossary-term.spec.ts
+//npm run test:dev staging glossary-term.spec.ts
 
 let users: { id: string; username: string; token: string; type: 'administrator' | 'power' | 'regular' }[] = [];
 let adminTokenDefault: string;
@@ -14,14 +20,17 @@ let powerToken: string;
 let regularToken: string;
 let newTokenPower: string;
 let newPowerId: string;
-let firstGlossarySection: string;
+
+let glossarySection: string;
+let createdSectionName: string | null = null; // Track if we created the section (for cleanup)
 let userTokens: { token: string; userType: string }[] = [];
 let createdGlossaryTermAdminId: number;
 let createdGlossaryTermPowerId: number;
 let puAndRuTokens: { token: string; userType: string }[] = [];
 
 test.describe.serial('Checks', () => {
-  test('Create users and get tokens, added default group for this users', async () => {
+  test.beforeAll(async ({ browser }) => {
+    // Get default admin token
     adminTokenDefault = await getDefaultAdminToken();
     console.log('Successfully retrieved default admin token');
 
@@ -57,29 +66,63 @@ test.describe.serial('Checks', () => {
     const response2 = await addingUserToGroup(adminToken, regularId, 1);
 
     console.log(response2.data, 'RU added to the default group');
+
+    // Setup glossary section (create via UI if needed)
+    const glossarySectionSetupPage = await browser.newPage();
+
+    try {
+      const glossarySectionResult = await getOrCreateGlossarySection(glossarySectionSetupPage, adminToken);
+
+      if (!glossarySectionResult) {
+        throw new Error('Failed to get or create glossary section');
+      }
+
+      glossarySection = glossarySectionResult;
+      console.log(`Using glossary section: ${glossarySection}`);
+
+      // Check if we created a new section (for cleanup)
+      const glossaryTermsResponse = await getGlossaryTerm(adminToken);
+
+      if (glossaryTermsResponse.data.terms.length === 0) {
+        createdSectionName = glossarySection;
+        console.log(`Created new section "${createdSectionName}" - will be cleaned up after tests`);
+      }
+    } finally {
+      await glossarySectionSetupPage.close();
+    }
   });
 
   test('get glossaryTerm and glossaryTerm_by_ID as Admin / PU / RU', async () => {
+    // First create a term so we have something to test with
+    const createRes = await postGlossaryTerm(adminToken, glossarySection);
+
+    expect(createRes.status).toBe(201);
+
+    const testTermId = createRes.data.term.id;
+
     for (const { token, userType } of userTokens) {
       //Check all glossaryTerm
       const res = await getGlossaryTerm(token);
 
-      const firstGlossaryId = res.data.terms[0].id;
-      firstGlossarySection = res.data.terms[0].section;
-
       expect(res.status).toBe(200);
+      expect(res.data.terms.length).toBeGreaterThan(0);
+
+      const firstGlossaryId = res.data.terms[0].id;
 
       //Check all glossaryTerm_by_ID
       const resById = await getGlossaryTerm(token, firstGlossaryId);
 
       expect(resById.status).toBe(200);
 
-      console.log(`Glossary term retrieved successfully for ${userType}`);
+      console.log('for:', userType, resById.data);
     }
+
+    // Cleanup the test term
+    await deleteGlossaryTerm(adminToken, testTermId);
   });
 
   test('post - Create glossaryTerm as Admin', async () => {
-    const res = await postGlossaryTerm(adminToken, firstGlossarySection);
+    const res = await postGlossaryTerm(adminToken, glossarySection);
 
     expect(res.status).toBe(201);
 
@@ -99,7 +142,7 @@ test.describe.serial('Checks', () => {
   });
 
   test('post - Create glossaryTerm as POWER with Privilege ', async () => {
-    const res = await postGlossaryTerm(powerToken, firstGlossarySection);
+    const res = await postGlossaryTerm(powerToken, glossarySection);
 
     expect(res.status).toBe(201);
 
@@ -182,7 +225,7 @@ test.describe.serial('Checks', () => {
 
       for (const { token, userType } of puAndRuTokens) {
         try {
-          const res = await postGlossaryTerm(token, firstGlossarySection);
+          const res = await postGlossaryTerm(token, glossarySection);
 
           throw new Error(`Expected 403, but received ${res?.status}`);
         } catch (error) {
@@ -211,10 +254,32 @@ test.describe.serial('Checks', () => {
     expect(termsNotInList).toBe(true);
   });
 
-  test.afterAll(async () => {
-    await deleteGlossaryTerm(adminToken, createdGlossaryTermAdminId);
-    await deleteGlossaryTerm(powerToken, createdGlossaryTermPowerId);
-    await deleteUser(adminTokenDefault, newPowerId);
+  test.afterAll(async ({ browser }) => {
+    // Cleanup glossary terms if they were created
+    if (createdGlossaryTermAdminId) {
+      await deleteGlossaryTerm(adminToken, createdGlossaryTermAdminId);
+    }
+    if (createdGlossaryTermPowerId) {
+      await deleteGlossaryTerm(powerToken, createdGlossaryTermPowerId);
+    }
+
+    // Cleanup the section if we created it
+    if (createdSectionName) {
+      const cleanupPage = await browser.newPage();
+
+      try {
+        await deleteGlossarySectionByUi(cleanupPage, createdSectionName);
+      } catch (error) {
+        console.warn(`Failed to delete glossary section: ${error}`);
+      } finally {
+        await cleanupPage.close();
+      }
+    }
+
+    // Cleanup users
+    if (newPowerId) {
+      await deleteUser(adminTokenDefault, newPowerId);
+    }
     await cleanupUsers(adminTokenDefault, users);
   });
 });
