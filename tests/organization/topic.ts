@@ -89,19 +89,14 @@ export async function deleteTagByUi(page: Page, topicName: string) {
 
   await page.waitForLoadState('networkidle');
 
-  // Search for the tag using the grid filter search input
-  // Try grid-filter search first (when tags exist), fallback to global search
+  // Search for the tag using the grid's search input with data-test attribute
   const gridSearchInput = page.locator('[data-test="grid-filter-topicGrid-pattern_search"] input');
-  const globalSearchInput = page.locator('[data-test="global-search-input"] input');
 
-  if (await gridSearchInput.isVisible()) {
-    await gridSearchInput.fill(topicName);
-  } else if (await globalSearchInput.isVisible()) {
-    await globalSearchInput.fill(topicName);
-  }
+  await gridSearchInput.fill(topicName);
+  await gridSearchInput.press('Enter');
   await page.waitForLoadState('networkidle');
 
-  // Click on the tag link to open it
+  // Wait for filtered results to appear and click on the tag link
   await page.getByRole('link', { name: topicName, exact: true }).click();
   await page.waitForLoadState('networkidle');
 
