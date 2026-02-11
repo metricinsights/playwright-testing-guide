@@ -36,10 +36,8 @@ export const TEST_CONSTANTS = {
 
 // Universal name generators
 export const nameGenerators = {
-  dataSource: () =>
-    `data source playwright_${randomBytes(TEST_CONSTANTS.RANDOM_BYTES_LENGTH).toString('hex')}`,
-  externalReport: () =>
-    `Playwright_External_Report_${randomBytes(TEST_CONSTANTS.RANDOM_BYTES_LENGTH).toString('hex')}`,
+  dataSource: () => `data source playwright_${randomBytes(TEST_CONSTANTS.RANDOM_BYTES_LENGTH).toString('hex')}`,
+  externalReport: () => `Playwright_External_Report_${randomBytes(TEST_CONSTANTS.RANDOM_BYTES_LENGTH).toString('hex')}`,
   externalReportTemplate: (type: string = 'Template') =>
     `Playwright_External_Report_Template_${type}_${randomBytes(TEST_CONSTANTS.RANDOM_BYTES_LENGTH).toString('hex')}`,
   updatedExternalReportTemplate: () =>

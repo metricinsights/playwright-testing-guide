@@ -33,4 +33,3 @@ export async function createDimensionValue(token: string, dimensionId: number) {
     throw error;
   }
 }
-

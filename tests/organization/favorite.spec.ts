@@ -40,38 +40,34 @@ let users: {
 
 // Initialize tokens before running tests
 test.beforeAll(async () => {
+  const userSetup = await initializeTestUsers();
 
+  adminTokenDefault = userSetup.adminTokenDefault;
+  adminToken = userSetup.adminToken;
+  powerToken = userSetup.powerToken;
+  regularToken = userSetup.regularToken;
+  users = userSetup.users;
+
+  //Save all type of users id
+  powerId = Number(users.find((user) => user.type === 'power')?.id || 0);
+  regularId = Number(users.find((user) => user.type === 'regular')?.id || 0);
+
+  //Create group with all access for the user
+  const response3 = await createGroup(adminToken, 'yes');
+  createdGroupId = response3.data.user_group.id;
+  groupName = response3.data.user_group.name;
+  testLogger.info(`Created group: ${groupName}`, `ID: ${createdGroupId}`);
+
+  //Adding group to the created users
+  const response1 = await addingUserToGroup(adminToken, powerId, createdGroupId);
+  testLogger.info(`Power user added to group ${createdGroupId}`, `User ID: ${powerId}`);
+
+  const response2 = await addingUserToGroup(adminToken, regularId, createdGroupId);
+  testLogger.info(`Regular user added to group ${createdGroupId}`, `User ID: ${regularId}`);
 });
 
 // Describe block for the suite
 test.describe.serial('Favorite Folder API Tests', () => {
-  test('Initialize test users and create test group', async () => {
-    const userSetup = await initializeTestUsers();
-    
-    adminTokenDefault = userSetup.adminTokenDefault;
-    adminToken = userSetup.adminToken;
-    powerToken = userSetup.powerToken;
-    regularToken = userSetup.regularToken;
-    users = userSetup.users;
-
-    //Save all type of users id
-    powerId = Number(users.find((user) => user.type === 'power')?.id || 0);
-    regularId = Number(users.find((user) => user.type === 'regular')?.id || 0);
-
-    //Create group with all access for the user
-    const response3 = await createGroup(adminToken, 'yes');
-    createdGroupId = response3.data.user_group.id;
-    groupName = response3.data.user_group.name;
-    testLogger.info(`Created group: ${groupName}`, `ID: ${createdGroupId}`);
-
-    //Adding group to the created users
-    const response1 = await addingUserToGroup(adminToken, powerId, createdGroupId);
-    testLogger.info(`Power user added to group ${createdGroupId}`, `User ID: ${powerId}`);
-
-    const response2 = await addingUserToGroup(adminToken, regularId, createdGroupId); 
-    testLogger.info(`Regular user added to group ${createdGroupId}`, `User ID: ${regularId}`);
-  });
-
   test('Create favorite folder', async () => {
     // Step 1: Create a new favorite folder
     const responseCFF = await createFavoriteFolder(adminToken);
@@ -172,8 +168,6 @@ test.describe.serial('Favorite Folder API Tests', () => {
     console.log(`Metric with ID ${metricId} has been updated.`);
   });
 
-
-
   test('Add metric to FF', async () => {
     // Check if metricId is defined before proceeding
     if (metricId === undefined || adminFavoriteFolderId === undefined) {
@@ -222,8 +216,11 @@ test.describe.serial('Favorite Folder API Tests', () => {
     }
 
     // Delete metric from FF
-    const responseDeleteMetricFromFavorite = await deleteMetricFromFavorite(adminToken, 
-      adminFavoriteFolderId, metricId);
+    const responseDeleteMetricFromFavorite = await deleteMetricFromFavorite(
+      adminToken,
+      adminFavoriteFolderId,
+      metricId,
+    );
 
     expect(responseDeleteMetricFromFavorite.status).toBe(200);
     console.log(`Metric with ID ${metricId} has been deleted from favorite folder with ID ${adminFavoriteFolderId}.`);
@@ -346,8 +343,11 @@ test.describe.serial('Favorite Folder API Tests', () => {
     }
 
     // Delete metric from FF
-    const responseDeleteMetricFromFavorite = await deleteMetricFromFavorite(powerToken, 
-      powerFavoriteFolderId, metricId);
+    const responseDeleteMetricFromFavorite = await deleteMetricFromFavorite(
+      powerToken,
+      powerFavoriteFolderId,
+      metricId,
+    );
 
     expect(responseDeleteMetricFromFavorite.status).toBe(200);
     console.log(`Metric with ID ${metricId} has been deleted from favorite folder with ID ${powerFavoriteFolderId}.`);

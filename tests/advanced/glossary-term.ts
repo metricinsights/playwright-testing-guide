@@ -78,7 +78,7 @@ export async function createGlossarySectionByUi(page: Page, sectionName: string)
   await page.waitForLoadState('networkidle');
 
   // Click on Sections tab
-  await page.locator('[data-test="menu_glossary--tab_section"]').waitFor({ state: 'visible'});
+  await page.locator('[data-test="menu_glossary--tab_section"]').waitFor({ state: 'visible' });
   await page.locator('[data-test="menu_glossary--tab_section"]').click();
   await page.waitForLoadState('networkidle');
 
@@ -111,7 +111,7 @@ export async function deleteGlossarySectionByUi(page: Page, sectionName: string)
   await page.waitForLoadState('networkidle');
 
   // Click on Sections tab
-  await page.locator('[data-test="menu_glossary--tab_section"]').waitFor({ state: 'visible'});
+  await page.locator('[data-test="menu_glossary--tab_section"]').waitFor({ state: 'visible' });
   await page.locator('[data-test="menu_glossary--tab_section"]').click();
   await page.waitForLoadState('networkidle');
 

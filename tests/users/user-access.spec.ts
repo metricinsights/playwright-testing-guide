@@ -26,24 +26,20 @@ let regularId: number | undefined;
 
 // Initialize tokens before running tests
 test.beforeAll(async () => {
+  const userSetup = await initializeTestUsers();
 
+  adminTokenDefault = userSetup.adminTokenDefault;
+  adminToken = userSetup.adminToken;
+  powerToken = userSetup.powerToken;
+  regularToken = userSetup.regularToken;
+  users = userSetup.users;
+
+  powerId = Number(users.find((user) => user.type === 'power')?.id || 0);
+  regularId = Number(users.find((user) => user.type === 'regular')?.id || 0);
 });
 
 // Describe block for the suite
 test.describe.serial('Provide needed access', () => {
-  test('Create users and get tokens', async () => {
-    const userSetup = await initializeTestUsers();
-    
-    adminTokenDefault = userSetup.adminTokenDefault;
-    adminToken = userSetup.adminToken;
-    powerToken = userSetup.powerToken;
-    regularToken = userSetup.regularToken;
-    users = userSetup.users;
-
-    powerId = Number(users.find((user) => user.type === 'power')?.id || 0);
-    regularId = Number(users.find((user) => user.type === 'regular')?.id || 0);
-  });
-
   test('Create Category', async () => {
     // Step 1: Create a new Category
     const responseCreateCategory = await createCategory(adminToken);

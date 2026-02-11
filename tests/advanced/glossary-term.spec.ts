@@ -32,7 +32,7 @@ test.describe.serial('Checks', () => {
   test.beforeAll(async ({ browser }) => {
     // Get users and tokens with group
     const userSetup = await initializeTestUsersWithGroup(1);
-    
+
     adminTokenDefault = userSetup.adminTokenDefault;
     adminToken = userSetup.adminToken;
     powerToken = userSetup.powerToken;
@@ -166,10 +166,7 @@ test.describe.serial('Checks', () => {
       } catch (error) {
         if (axios.isAxiosError(error) && error.response) {
           expect(error.response.status).toBe(403);
-          expect(error.response.data).toHaveProperty(
-            'message',
-            'You do not have permission to delete a Glossary Term',
-          );
+          expect(error.response.data).toHaveProperty('message', 'You do not have permission to delete a Glossary Term');
 
           testLogger.info(`${userType} cannot delete glossary term`, '403 Forbidden (expected)');
         } else {
@@ -214,7 +211,10 @@ test.describe.serial('Checks', () => {
         } catch (error) {
           if (axios.isAxiosError(error) && error.response) {
             expect(error.response.status).toBe(403);
-            expect(error.response.data).toHaveProperty('message', 'You do not have permission to create a Glossary Term');
+            expect(error.response.data).toHaveProperty(
+              'message',
+              'You do not have permission to create a Glossary Term',
+            );
 
             testLogger.info(`${userType} cannot create glossary term`, '403 Forbidden (expected)');
           } else {

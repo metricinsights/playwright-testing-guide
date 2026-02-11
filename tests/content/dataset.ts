@@ -112,19 +112,19 @@ export async function deleteDatasetData(token: string, datasetId: number) {
   const headers = {
     token: token,
   };
-  
+
   const currentDate = new Date();
   const formattedDate = currentDate.toISOString().split('T')[0] + ' 00:00:00';
-  try { 
-  const deleteDatasetDataPayload = {
-    call: 'delete_data',
-    delete_measurements_from: formattedDate,
-    delete_measurements_through: formattedDate,
-  };
+  try {
+    const deleteDatasetDataPayload = {
+      call: 'delete_data',
+      delete_measurements_from: formattedDate,
+      delete_measurements_through: formattedDate,
+    };
 
-  const responseDeleteDatasetData = await apiInstance.put<{ message: string }>(endpoint, deleteDatasetDataPayload, {
-    headers,
-  });
+    const responseDeleteDatasetData = await apiInstance.put<{ message: string }>(endpoint, deleteDatasetDataPayload, {
+      headers,
+    });
 
     return responseDeleteDatasetData;
   } catch (error) {

@@ -17,6 +17,8 @@ import { createMetric, enableMetric, collectMetric, updateMetric, deleteMetric }
 import { accessToMetric, accessToDimension } from '../users/user-access';
 import { initializeTestUsersWithGroup } from '../utils/test-helpers';
 
+//npm run test:dev staging dimension.spec.ts
+
 let dimensionId: number | undefined; // Variable to store dimensionId
 let dimensionValueId: number | undefined; // Variable to store dimensionValueId
 let powerId: number | undefined; // Variable to store powerID
@@ -34,27 +36,24 @@ let userTokens: { token: string; userType: string }[] = [];
 
 // Initialize tokens before running tests
 test.beforeAll(async () => {
+  const userSetup = await initializeTestUsersWithGroup(1);
 
+  adminTokenDefault = userSetup.adminTokenDefault;
+  adminToken = userSetup.adminToken;
+  powerToken = userSetup.powerToken;
+  regularToken = userSetup.regularToken;
+  powerId = userSetup.powerId;
+  regularId = userSetup.regularId;
+  users = userSetup.users;
+
+  userTokens = [
+    { token: adminToken, userType: 'Admin' },
+    { token: powerToken, userType: 'Power User' },
+    { token: regularToken, userType: 'Regular User' },
+  ];
 });
 
 test.describe.serial('Dimension', () => {
-  test('Create users and get tokens, added default group for this users', async () => {
-    const userSetup = await initializeTestUsersWithGroup(1);
-    
-    adminTokenDefault = userSetup.adminTokenDefault;
-    adminToken = userSetup.adminToken;
-    powerToken = userSetup.powerToken;
-    regularToken = userSetup.regularToken;
-    powerId = userSetup.powerId;
-    regularId = userSetup.regularId;
-    users = userSetup.users;
-
-    userTokens = [
-      { token: adminToken, userType: 'Admin' },
-      { token: powerToken, userType: 'Power User' },
-      { token: regularToken, userType: 'Regular User' },
-    ];
-  });
   test('Create Category', async () => {
     const responseCreateCategory = await createCategory(adminToken);
     expect(responseCreateCategory.status).toBe(201);

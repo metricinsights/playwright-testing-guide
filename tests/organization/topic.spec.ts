@@ -16,20 +16,16 @@ const topicName = nameGenerators.topic();
 //npm run test:dev staging topic.spec.ts
 
 test.beforeAll(async () => {
+  const userSetup = await initializeTestUsers();
 
+  adminTokenDefault = userSetup.adminTokenDefault;
+  adminToken = userSetup.adminToken;
+  powerToken = userSetup.powerToken;
+  regularToken = userSetup.regularToken;
+  users = userSetup.users;
 });
 
 test.describe.serial('GET /api/topic', () => {
-  test('Create users and get tokens', async () => {
-    const userSetup = await initializeTestUsers();
-    
-    adminTokenDefault = userSetup.adminTokenDefault;
-    adminToken = userSetup.adminToken;
-    powerToken = userSetup.powerToken;
-    regularToken = userSetup.regularToken;
-    users = userSetup.users;
-  });
-
   test('Create Tag by UI', async ({ page }) => {
     await createTagByUi(page, topicName);
     await page.close();

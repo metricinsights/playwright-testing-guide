@@ -55,9 +55,9 @@ function ensureCategoryIdExists(): void {
 }
 
 test.describe.serial('Dataset API Testing Suite', () => {
-  test('Initialize test users and create test group', async () => {
+  test.beforeAll(async () => {
     const userSetup = await initializeTestUsers();
-    
+
     adminTokenDefault = userSetup.adminTokenDefault;
     adminToken = userSetup.adminToken;
     powerToken = userSetup.powerToken;

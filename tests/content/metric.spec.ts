@@ -19,19 +19,15 @@ let adminToken: string;
 
 // Initialize tokens before running tests
 test.beforeAll(async () => {
+  const userSetup = await initializeTestUsers();
 
+  adminTokenDefault = userSetup.adminTokenDefault;
+  adminToken = userSetup.adminToken;
+  users = userSetup.users;
 });
 
 // Describe block for the suite
 test.describe.serial('Metric', () => {
-  test('Create users and get tokens', async () => {
-    const userSetup = await initializeTestUsers();
-    
-    adminTokenDefault = userSetup.adminTokenDefault;
-    adminToken = userSetup.adminToken;
-    users = userSetup.users;
-  });
-
   test('Create Category', async () => {
     // Step 1: Create a new Category
     const responseCreateCategory = await createCategory(adminToken);

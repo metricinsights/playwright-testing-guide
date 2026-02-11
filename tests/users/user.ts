@@ -139,7 +139,7 @@ export async function setupUsersAndTokens(
         username: user.username,
         email: user.email,
         token,
-        type: userType
+        type: userType,
       });
     }
 
