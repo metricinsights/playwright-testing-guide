@@ -147,7 +147,7 @@ export async function deleteMetric(token: string, metricId: number) {
 
   try {
     const responseDeleteMetric = await apiInstance.delete(endpoint, {
-      headers: headers
+      headers: headers,
     });
 
     // Log response for debugging
@@ -164,7 +164,7 @@ export async function deleteMetric(token: string, metricId: number) {
       // Return a mock successful response for 404s
       return {
         status: 200,
-        data: { message: 'Metric already deleted (404)' }
+        data: { message: 'Metric already deleted (404)' },
       };
     }
 

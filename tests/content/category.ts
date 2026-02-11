@@ -1,8 +1,6 @@
 import { apiInstance } from '../auth/auth';
 import * as crypto from 'crypto';
 
-
-
 // Variables
 const uniqueCatName = `Playwright_Category_${crypto.randomBytes(6).toString('hex')}`;
 
@@ -51,11 +49,11 @@ export async function deleteCategory(token: string, categoryId: number) {
       // Return a mock successful response for 404s
       return {
         status: 200,
-        data: { message: 'Category already deleted (404)' }
+        data: { message: 'Category already deleted (404)' },
       };
     }
 
     // Re-throw other errors
     throw error;
   }
-} 
+}

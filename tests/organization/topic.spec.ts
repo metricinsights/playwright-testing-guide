@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { getTopics, checkRequestById, createTagByUi, deleteTagByUi } from './topic';
-import { getDefaultAdminToken, setupUsersAndTokens } from '../users/user';
-import { nameGenerators } from '../utils/test-helpers';
+import { initializeTestUsers, nameGenerators, testLogger } from '../utils/test-helpers';
 
 let firstIdAdmin: number | undefined;
 let firstIdPower: number | undefined;
@@ -17,28 +16,16 @@ const topicName = nameGenerators.topic();
 //npm run test:dev staging topic.spec.ts
 
 test.beforeAll(async () => {
+  const userSetup = await initializeTestUsers();
 
+  adminTokenDefault = userSetup.adminTokenDefault;
+  adminToken = userSetup.adminToken;
+  powerToken = userSetup.powerToken;
+  regularToken = userSetup.regularToken;
+  users = userSetup.users;
 });
 
 test.describe.serial('GET /api/topic', () => {
-  test('Create users and get tokens', async () => {
-    adminTokenDefault = await getDefaultAdminToken();
-    console.log('Successfully retrieved default admin token');
-
-    //Creating Admin / PU / RU
-    users = await setupUsersAndTokens(adminTokenDefault);
-
-    adminToken = users.find((user) => user.type === 'administrator')?.token || '';
-    powerToken = users.find((user) => user.type === 'power')?.token || '';
-    regularToken = users.find((user) => user.type === 'regular')?.token || '';
-
-    expect(adminToken).toBeDefined();
-    expect(powerToken).toBeDefined();
-    expect(regularToken).toBeDefined();
-
-    console.log(`Successfully created ${users.length} test users`);
-  });
-
   test('Create Tag by UI', async ({ page }) => {
     await createTagByUi(page, topicName);
     await page.close();
@@ -96,7 +83,7 @@ test.describe.serial('GET /api/topic', () => {
     expect(response.status).toBe(401);
     expect(response.data).toHaveProperty('message', 'Unauthorized');
 
-    console.log(response.data, response.status);
+    testLogger.info('Unauthorized request without token', `Status: ${response.status}`);
   });
 
   test('Delete Tag by UI', async ({ page }) => {

@@ -1,8 +1,6 @@
 import { apiInstance } from '../auth/auth';
 import * as crypto from 'crypto';
 
-
-
 // Function to create a favorite folder and return its ID
 export async function createFavoriteFolder(token: string) {
   const endpoint = `/api/favorite`;
@@ -96,10 +94,9 @@ export async function deleteMetricFromFavorite(token: string, favoriteFolderId: 
     headers: headers,
     data: deleteMetricFromFavorite, // This is how you send a body with DELETE requests
   });
-  
+
   return responseDeleteMetricFromFavorite;
 }
-
 
 // Function to delete the FF
 export async function deleteFF(token: string, favoriteFolderId: number) {

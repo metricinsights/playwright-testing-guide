@@ -11,8 +11,6 @@ export const regularEmail = process.env.REGULAR_EMAIL;
 export const usernamePower = process.env.USERNAME_POWER;
 export const usernameAdmin = process.env.USERNAME_ADMIN;
 
-export const autotestEmail = process.env.AUTOTEST_EMAIL;
-
 export const ADMIN = 'admin';
 export const POWER = 'power';
 export const REGULAR = 'regular';
@@ -69,7 +67,5 @@ export async function loginAsAdmin(page: Page) {
   await page.getByPlaceholder('Password').click();
   await page.getByPlaceholder('Password').fill(`${process.env.DEFAULT_PASSWORD_ADMIN}`);
   await page.getByRole('button', { name: 'Login' }).click();
-  await page.waitForURL(`${process.env.BASE_URL}/home`, { waitUntil: 'networkidle', });
-  // await page.waitForLoadState('load')
+  await page.waitForURL(`${process.env.BASE_URL}/home`, { waitUntil: 'networkidle' });
 }
-

@@ -10,7 +10,8 @@ import {
 import { createCategory, deleteCategory } from '../content/category';
 import { createMetric, enableMetric, collectMetric, updateMetric, deleteMetric } from '../content/metric';
 import { addingUserToGroup, createGroup } from '../users/user-access';
-import { getDefaultAdminToken, setupUsersAndTokens, cleanupUsers } from '../users/user';
+import { cleanupUsers } from '../users/user';
+import { initializeTestUsers, testLogger } from '../utils/test-helpers';
 
 let adminFavoriteFolderId: number | undefined; // Variable to store Admin favoriteFolderId
 let powerFavoriteFolderId: number | undefined; // Variable to store Power favoriteFolderId
@@ -31,7 +32,6 @@ let groupName: string;
 let users: {
   id: string;
   username: string;
-  email: string;
   token: string;
   type: 'administrator' | 'power' | 'regular';
 }[] = [];
@@ -40,46 +40,34 @@ let users: {
 
 // Initialize tokens before running tests
 test.beforeAll(async () => {
+  const userSetup = await initializeTestUsers();
 
+  adminTokenDefault = userSetup.adminTokenDefault;
+  adminToken = userSetup.adminToken;
+  powerToken = userSetup.powerToken;
+  regularToken = userSetup.regularToken;
+  users = userSetup.users;
+
+  //Save all type of users id
+  powerId = Number(users.find((user) => user.type === 'power')?.id || 0);
+  regularId = Number(users.find((user) => user.type === 'regular')?.id || 0);
+
+  //Create group with all access for the user
+  const response3 = await createGroup(adminToken, 'yes');
+  createdGroupId = response3.data.user_group.id;
+  groupName = response3.data.user_group.name;
+  testLogger.info(`Created group: ${groupName}`, `ID: ${createdGroupId}`);
+
+  //Adding group to the created users
+  const response1 = await addingUserToGroup(adminToken, powerId, createdGroupId);
+  testLogger.info(`Power user added to group ${createdGroupId}`, `User ID: ${powerId}`);
+
+  const response2 = await addingUserToGroup(adminToken, regularId, createdGroupId);
+  testLogger.info(`Regular user added to group ${createdGroupId}`, `User ID: ${regularId}`);
 });
 
 // Describe block for the suite
 test.describe.serial('Favorite Folder API Tests', () => {
-  test('Initialize test users and create test group', async () => {
-    //Create default admin token
-    adminTokenDefault = await getDefaultAdminToken();
-
-    //Create all type of users
-    users = await setupUsersAndTokens(adminTokenDefault);
-
-    adminToken = users.find((user) => user.type === 'administrator')?.token || '';
-    powerToken = users.find((user) => user.type === 'power')?.token || '';
-    regularToken = users.find((user) => user.type === 'regular')?.token || '';
-
-    //Save all type of users id
-    powerId = Number(users.find((user) => user.type === 'power')?.id || 0);
-    regularId = Number(users.find((user) => user.type === 'regular')?.id || 0);
-
-    expect(adminToken).toBeDefined();
-    expect(powerToken).toBeDefined();
-    expect(regularToken).toBeDefined();
-
-    console.log(`Successfully created ${users.length} test users`);
-
-    //Create group with all access for the user
-    const response3 = await createGroup(adminToken, 'yes');
-    createdGroupId = response3.data.user_group.id;
-    groupName = response3.data.user_group.name;
-    console.log(`Created group ID: ${createdGroupId}, Name: ${groupName}`);
-
-    //Adding group to the created users
-    const response1 = await addingUserToGroup(adminToken, powerId, createdGroupId);
-    console.log(response1.data, 'PU added to the default group');
-
-    const response2 = await addingUserToGroup(adminToken, regularId, createdGroupId); 
-    console.log(response2.data, 'RU added to the default group');
-  });
-
   test('Create favorite folder', async () => {
     // Step 1: Create a new favorite folder
     const responseCFF = await createFavoriteFolder(adminToken);
@@ -180,8 +168,6 @@ test.describe.serial('Favorite Folder API Tests', () => {
     console.log(`Metric with ID ${metricId} has been updated.`);
   });
 
-
-
   test('Add metric to FF', async () => {
     // Check if metricId is defined before proceeding
     if (metricId === undefined || adminFavoriteFolderId === undefined) {
@@ -230,8 +216,11 @@ test.describe.serial('Favorite Folder API Tests', () => {
     }
 
     // Delete metric from FF
-    const responseDeleteMetricFromFavorite = await deleteMetricFromFavorite(adminToken, 
-      adminFavoriteFolderId, metricId);
+    const responseDeleteMetricFromFavorite = await deleteMetricFromFavorite(
+      adminToken,
+      adminFavoriteFolderId,
+      metricId,
+    );
 
     expect(responseDeleteMetricFromFavorite.status).toBe(200);
     console.log(`Metric with ID ${metricId} has been deleted from favorite folder with ID ${adminFavoriteFolderId}.`);
@@ -354,8 +343,11 @@ test.describe.serial('Favorite Folder API Tests', () => {
     }
 
     // Delete metric from FF
-    const responseDeleteMetricFromFavorite = await deleteMetricFromFavorite(powerToken, 
-      powerFavoriteFolderId, metricId);
+    const responseDeleteMetricFromFavorite = await deleteMetricFromFavorite(
+      powerToken,
+      powerFavoriteFolderId,
+      metricId,
+    );
 
     expect(responseDeleteMetricFromFavorite.status).toBe(200);
     console.log(`Metric with ID ${metricId} has been deleted from favorite folder with ID ${powerFavoriteFolderId}.`);

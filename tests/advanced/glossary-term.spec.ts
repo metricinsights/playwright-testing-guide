@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { getDefaultAdminToken, setupUsersAndTokens, cleanupUsers, createUser, getToken, deleteUser } from '../users/user';
+import { cleanupUsers, createUser, getToken, deleteUser } from '../users/user';
 import {
   getGlossaryTerm,
   postGlossaryTerm,
@@ -7,19 +7,17 @@ import {
   getOrCreateGlossarySection,
   deleteGlossarySectionByUi,
 } from './glossary-term';
-import { addingUserToGroup } from '../users/user-access';
+import { initializeTestUsersWithGroup, testLogger } from '../utils/test-helpers';
 
 import axios from 'axios';
 
 //npm run test:dev staging glossary-term.spec.ts
 
 let users: { id: string; username: string; token: string; type: 'administrator' | 'power' | 'regular' }[] = [];
-
 let adminTokenDefault: string;
 let adminToken: string;
 let powerToken: string;
 let regularToken: string;
-
 let newTokenPower: string;
 let newPowerId: string;
 
@@ -28,47 +26,29 @@ let createdSectionName: string | null = null; // Track if we created the section
 let userTokens: { token: string; userType: string }[] = [];
 let createdGlossaryTermAdminId: number;
 let createdGlossaryTermPowerId: number;
-
 let puAndRuTokens: { token: string; userType: string }[] = [];
 
 test.describe.serial('Checks', () => {
   test.beforeAll(async ({ browser }) => {
-    // Get default admin token
-    adminTokenDefault = await getDefaultAdminToken();
-    console.log('Successfully retrieved default admin token');
+    // Get users and tokens with group
+    const userSetup = await initializeTestUsersWithGroup(1);
 
-    //Creating Admin / PU / RU
-    users = await setupUsersAndTokens(adminTokenDefault);
+    adminTokenDefault = userSetup.adminTokenDefault;
+    adminToken = userSetup.adminToken;
+    powerToken = userSetup.powerToken;
+    regularToken = userSetup.regularToken;
+    users = userSetup.users;
 
-    adminToken = users.find((user) => user.type === 'administrator')?.token || '';
-    powerToken = users.find((user) => user.type === 'power')?.token || '';
-    regularToken = users.find((user) => user.type === 'regular')?.token || '';
+    const powerId = userSetup.powerId;
+    const regularId = userSetup.regularId;
 
-    const powerId = Number(users.find((user) => user.type === 'power')?.id || 0);
-    const regularId = Number(users.find((user) => user.type === 'regular')?.id || 0);
-
-    console.log(powerId, '- Power User', regularId, '- Regular User');
-
-    expect(adminToken).toBeDefined();
-    expect(powerToken).toBeDefined();
-    expect(regularToken).toBeDefined();
-
-    console.log(`Successfully created ${users.length} test users`);
+    testLogger.info(`Power User ID: ${powerId}, Regular User ID: ${regularId}`);
 
     userTokens = [
       { token: adminToken, userType: 'Admin' },
       { token: powerToken, userType: 'Power User' },
       { token: regularToken, userType: 'Regular User' },
     ];
-
-    //Adding group to the created users
-    const response1 = await addingUserToGroup(adminToken, powerId, 1);
-
-    console.log(response1.data, 'PU added to the default group');
-
-    const response2 = await addingUserToGroup(adminToken, regularId, 1);
-
-    console.log(response2.data, 'RU added to the default group');
 
     // Setup glossary section (create via UI if needed)
     const glossarySectionSetupPage = await browser.newPage();
@@ -81,14 +61,14 @@ test.describe.serial('Checks', () => {
       }
 
       glossarySection = glossarySectionResult;
-      console.log(`Using glossary section: ${glossarySection}`);
+      testLogger.info(`Using glossary section: ${glossarySection}`);
 
       // Check if we created a new section (for cleanup)
       const glossaryTermsResponse = await getGlossaryTerm(adminToken);
 
       if (glossaryTermsResponse.data.terms.length === 0) {
         createdSectionName = glossarySection;
-        console.log(`Created new section "${createdSectionName}" - will be cleaned up after tests`);
+        testLogger.info(`Created new section "${createdSectionName}" - will be cleaned up after tests`);
       }
     } finally {
       await glossarySectionSetupPage.close();
@@ -117,7 +97,7 @@ test.describe.serial('Checks', () => {
 
       expect(resById.status).toBe(200);
 
-      console.log('for:', userType, resById.data);
+      testLogger.info(`${userType} can access glossary term`, `ID: ${firstGlossaryId}`);
     }
 
     // Cleanup the test term
@@ -131,7 +111,7 @@ test.describe.serial('Checks', () => {
 
     createdGlossaryTermAdminId = res.data.term.id;
 
-    console.log(res.data, createdGlossaryTermAdminId);
+    testLogger.success('Admin created glossary term', createdGlossaryTermAdminId);
   });
 
   test('check that created glossaryTerm at the list by Admin', async () => {
@@ -142,8 +122,6 @@ test.describe.serial('Checks', () => {
     const glossaryTermInList = res.data.terms.some((term: { id: number }) => term.id === createdGlossaryTermAdminId);
 
     expect(glossaryTermInList).toBe(true);
-
-    //console.log('----------', glossaryTermInList);
   });
 
   test('post - Create glossaryTerm as POWER with Privilege ', async () => {
@@ -153,7 +131,7 @@ test.describe.serial('Checks', () => {
 
     createdGlossaryTermPowerId = res.data.term.id;
 
-    console.log(res.data, createdGlossaryTermPowerId);
+    testLogger.success('Power user created glossary term', createdGlossaryTermPowerId);
   });
 
   test('check that created glossaryTerm at the list by Power', async () => {
@@ -164,8 +142,6 @@ test.describe.serial('Checks', () => {
     const glossaryTermInList = res.data.terms.some((term: { id: number }) => term.id === createdGlossaryTermPowerId);
 
     expect(glossaryTermInList).toBe(true);
-
-    //console.log('----------', glossaryTermInList);
   });
 
   test('delete glossaryTerm as Admin and Power', async () => {
@@ -177,7 +153,7 @@ test.describe.serial('Checks', () => {
 
       expect(res?.status).toBe(200);
 
-      console.log(`Glossary term deleted by ${userType}`);
+      testLogger.success(`${userType} deleted glossary term`, glossaryTermId);
     }
   });
 
@@ -190,12 +166,9 @@ test.describe.serial('Checks', () => {
       } catch (error) {
         if (axios.isAxiosError(error) && error.response) {
           expect(error.response.status).toBe(403);
-          expect(error.response.data).toHaveProperty(
-            'message',
-            'You do not have permission to delete a Glossary Term',
-          );
+          expect(error.response.data).toHaveProperty('message', 'You do not have permission to delete a Glossary Term');
 
-          console.log(error.response.data, `delete is not possible by ${userType}`);
+          testLogger.info(`${userType} cannot delete glossary term`, '403 Forbidden (expected)');
         } else {
           throw error;
         }
@@ -238,9 +211,12 @@ test.describe.serial('Checks', () => {
         } catch (error) {
           if (axios.isAxiosError(error) && error.response) {
             expect(error.response.status).toBe(403);
-            expect(error.response.data).toHaveProperty('message', 'You do not have permission to create a Glossary Term');
+            expect(error.response.data).toHaveProperty(
+              'message',
+              'You do not have permission to create a Glossary Term',
+            );
 
-            console.log(error.response.data, `post is not possible by ${userType}`);
+            testLogger.info(`${userType} cannot create glossary term`, '403 Forbidden (expected)');
           } else {
             throw error;
           }
@@ -277,7 +253,7 @@ test.describe.serial('Checks', () => {
       try {
         await deleteGlossarySectionByUi(cleanupPage, createdSectionName);
       } catch (error) {
-        console.warn(`Failed to delete glossary section: ${error}`);
+        testLogger.warn(`Failed to delete glossary section: ${error}`);
       } finally {
         await cleanupPage.close();
       }
