@@ -10,8 +10,8 @@ import {
 import { createCategory, deleteCategory } from '../content/category';
 import { createMetric, enableMetric, collectMetric, updateMetric, deleteMetric } from '../content/metric';
 import { addingUserToGroup, createGroup } from '../users/user-access';
-import { cleanupUsers } from '../users/user';
-import { initializeTestUsers, testLogger } from '../utils/test-helpers';
+import { cleanupUsers, initializeTestUsers } from '../users/user';
+import { testLogger } from '../utils/test-helpers';
 
 let adminFavoriteFolderId: number | undefined; // Variable to store Admin favoriteFolderId
 let powerFavoriteFolderId: number | undefined; // Variable to store Power favoriteFolderId

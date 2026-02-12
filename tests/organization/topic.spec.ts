@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { getTopics, checkRequestById, createTagByUi, deleteTagByUi } from './topic';
-import { initializeTestUsers, nameGenerators, testLogger } from '../utils/test-helpers';
+import { initializeTestUsers } from '../users/user';
+import { nameGenerators, testLogger } from '../utils/test-helpers';
 
 let firstIdAdmin: number | undefined;
 let firstIdPower: number | undefined;

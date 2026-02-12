@@ -4,7 +4,7 @@ import { createMetric, enableMetric, collectMetric, updateMetric, deleteMetric }
 import { accessToMetric, accessToDimension, createGroup, deleteGroup } from './user-access';
 import { createDimension, deleteDimension } from '../advanced/dimension';
 import { createDimensionValue } from '../advanced/dimension-value';
-import { initializeTestUsers } from '../utils/test-helpers';
+import { initializeTestUsers } from './user';
 
 let categoryId: number | undefined; // Variable to store categoryId
 let metricId: number | undefined; // Variable to store metricId

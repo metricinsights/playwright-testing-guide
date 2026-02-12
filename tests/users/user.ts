@@ -1,5 +1,8 @@
 import axios from 'axios';
 import * as crypto from 'crypto';
+import { expect } from '@playwright/test';
+import { addingUserToGroup } from './user-access';
+import { testLogger } from '../utils/test-helpers';
 
 export const instanceBaseUrl = process.env.BASE_URL;
 
@@ -228,4 +231,79 @@ export async function getUserTokenWithoutAuth() {
       message: 'An unexpected error occurred',
     };
   }
+}
+
+// User setup helpers - interfaces
+export interface TestUserTokens {
+  adminTokenDefault: string;
+  adminToken: string;
+  powerToken: string;
+  regularToken: string;
+  users: Array<{
+    id: string;
+    username: string;
+    token: string;
+    type: 'administrator' | 'power' | 'regular';
+  }>;
+}
+
+export interface TestUserTokensWithIds extends TestUserTokens {
+  powerId: number;
+  regularId: number;
+}
+
+/**
+ * Initialize test users - creates Admin, Power, and Regular users with tokens
+ * Use this for simple test suites that only need user tokens
+ */
+export async function initializeTestUsers(): Promise<TestUserTokens> {
+  testLogger.setup('Initializing test users');
+
+  const adminTokenDefault = await getDefaultAdminToken();
+  testLogger.info('Retrieved default admin token');
+
+  const users = await setupUsersAndTokens(adminTokenDefault);
+
+  const adminToken = users.find((user) => user.type === 'administrator')?.token || '';
+  const powerToken = users.find((user) => user.type === 'power')?.token || '';
+  const regularToken = users.find((user) => user.type === 'regular')?.token || '';
+
+  expect(adminToken).toBeDefined();
+  expect(powerToken).toBeDefined();
+  expect(regularToken).toBeDefined();
+
+  testLogger.info(`Created ${users.length} test users`);
+
+  return {
+    adminTokenDefault,
+    adminToken,
+    powerToken,
+    regularToken,
+    users,
+  };
+}
+
+/**
+ * Initialize test users with group assignment - creates users, extracts IDs, and adds to default group
+ * Use this for test suites that need user IDs and group membership
+ */
+export async function initializeTestUsersWithGroup(groupId: number = 1): Promise<TestUserTokensWithIds> {
+  const baseSetup = await initializeTestUsers();
+
+  const powerId = Number(baseSetup.users.find((user) => user.type === 'power')?.id || 0);
+  const regularId = Number(baseSetup.users.find((user) => user.type === 'regular')?.id || 0);
+
+  testLogger.info('Adding users to default group', `Group ID: ${groupId}`);
+
+  await addingUserToGroup(baseSetup.adminToken, powerId, groupId);
+  testLogger.info(`Power user added to group ${groupId}:`, `User ID: ${powerId}`);
+
+  await addingUserToGroup(baseSetup.adminToken, regularId, groupId);
+  testLogger.info(`Regular user added to group ${groupId}`, `User ID: ${regularId}`);
+
+  return {
+    ...baseSetup,
+    powerId,
+    regularId,
+  };
 }

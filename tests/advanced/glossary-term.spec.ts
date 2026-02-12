@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { cleanupUsers, createUser, getToken, deleteUser } from '../users/user';
+import { cleanupUsers, createUser, getToken, deleteUser, initializeTestUsersWithGroup } from '../users/user';
 import {
   getGlossaryTerm,
   postGlossaryTerm,
@@ -7,7 +7,7 @@ import {
   getOrCreateGlossarySection,
   deleteGlossarySectionByUi,
 } from './glossary-term';
-import { initializeTestUsersWithGroup, testLogger } from '../utils/test-helpers';
+import { testLogger } from '../utils/test-helpers';
 
 import axios from 'axios';
 

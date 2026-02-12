@@ -15,7 +15,7 @@ import { createDimensionValue } from './dimension-value';
 import { createCategory, deleteCategory } from '../content/category';
 import { createMetric, enableMetric, collectMetric, updateMetric, deleteMetric } from '../content/metric';
 import { accessToMetric, accessToDimension } from '../users/user-access';
-import { initializeTestUsersWithGroup } from '../utils/test-helpers';
+import { initializeTestUsersWithGroup } from '../users/user';
 
 //npm run test:dev staging dimension.spec.ts
 
