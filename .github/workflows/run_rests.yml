@@ -35,7 +35,7 @@ jobs:
           echo "version=$TAG_NAME" >> $GITHUB_OUTPUT
           echo "Tag version: $TAG_NAME"
 
-      - name: Create environment
+      - name: Create environment and run tests
         env:
           CREATE_INSTANCE_SCRIPT: ${{ secrets.CREATE_INSTANCE_SCRIPT }}
           SSL_SERVER_CRT: ${{ secrets.SSL_SERVER_CRT }}
