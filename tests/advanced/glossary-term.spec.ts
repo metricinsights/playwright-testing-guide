@@ -7,6 +7,7 @@ import {
   getOrCreateGlossarySection,
   deleteGlossarySectionByUi,
 } from './glossary-term';
+import { deleteGroup } from '../users/user-access';
 import { testLogger } from '../utils/test-helpers';
 
 import axios from 'axios';
@@ -20,6 +21,8 @@ let powerToken: string;
 let regularToken: string;
 let newTokenPower: string;
 let newPowerId: string;
+let groupId: number;
+let groupName: string;
 
 let glossarySection: string;
 let createdSectionName: string | null = null; // Track if we created the section (for cleanup)
@@ -31,13 +34,15 @@ let puAndRuTokens: { token: string; userType: string }[] = [];
 test.describe.serial('Checks', () => {
   test.beforeAll(async ({ browser }) => {
     // Get users and tokens with group
-    const userSetup = await initializeTestUsersWithGroup(1);
+    const userSetup = await initializeTestUsersWithGroup('yes');
 
     adminTokenDefault = userSetup.adminTokenDefault;
     adminToken = userSetup.adminToken;
     powerToken = userSetup.powerToken;
     regularToken = userSetup.regularToken;
     users = userSetup.users;
+    groupId = userSetup.groupId;
+    groupName = userSetup.groupName;
 
     const powerId = userSetup.powerId;
     const regularId = userSetup.regularId;
@@ -264,5 +269,12 @@ test.describe.serial('Checks', () => {
       await deleteUser(adminTokenDefault, newPowerId);
     }
     await cleanupUsers(adminTokenDefault, users);
+
+    // Cleanup group
+    try {
+      if (groupId !== undefined) await deleteGroup(adminToken, groupId);
+    } catch (error) {
+      testLogger.warn('Failed to delete group in afterAll (might be already deleted)');
+    }
   });
 });

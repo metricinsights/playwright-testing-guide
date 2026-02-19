@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { instanceBaseUrl } from '../auth/auth';
-import { addingUserToGroup, createGroup, deleteGroup } from '../users/user-access';
-import { cleanupUsers, initializeTestUsers } from '../users/user';
+import { deleteGroup } from '../users/user-access';
+import { cleanupUsers, initializeTestUsersWithGroup } from '../users/user';
 import { testLogger } from '../utils/test-helpers';
 import {
   createDataset,
@@ -56,29 +56,20 @@ function ensureCategoryIdExists(): void {
 
 test.describe.serial('Dataset API Testing Suite', () => {
   test.beforeAll(async () => {
-    const userSetup = await initializeTestUsers();
+    const userSetup = await initializeTestUsersWithGroup('yes');
 
     adminTokenDefault = userSetup.adminTokenDefault;
     adminToken = userSetup.adminToken;
     powerToken = userSetup.powerToken;
     regularToken = userSetup.regularToken;
     users = userSetup.users;
+    powerId = userSetup.powerId;
+    regularId = userSetup.regularId;
+    createdGroupId = userSetup.groupId;
+    groupName = userSetup.groupName;
 
-    //Save all type of users id
-    powerId = Number(users.find((user) => user.type === 'power')?.id || 0);
-    regularId = Number(users.find((user) => user.type === 'regular')?.id || 0);
-
-    //Create group with all access for the user
-    const response3 = await createGroup(adminTokenDefault, 'yes');
-    createdGroupId = response3.data.user_group.id;
-    groupName = response3.data.user_group.name;
     testLogger.info(`Created group: ${groupName}`, `ID: ${createdGroupId}`);
-
-    //Adding group to the created users
-    const response1 = await addingUserToGroup(adminToken, powerId, createdGroupId);
     testLogger.info(`Power user added to group ${createdGroupId}`, `User ID: ${powerId}`);
-
-    const response2 = await addingUserToGroup(adminToken, regularId, createdGroupId);
     testLogger.info(`Regular user added to group ${createdGroupId}`, `User ID: ${regularId}`);
   });
 

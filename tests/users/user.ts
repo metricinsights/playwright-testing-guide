@@ -1,7 +1,7 @@
 import axios from 'axios';
 import * as crypto from 'crypto';
 import { expect } from '@playwright/test';
-import { addingUserToGroup } from './user-access';
+import { addingUserToGroup, createGroup } from './user-access';
 import { testLogger } from '../utils/test-helpers';
 
 export const instanceBaseUrl = process.env.BASE_URL;
@@ -250,6 +250,8 @@ export interface TestUserTokens {
 export interface TestUserTokensWithIds extends TestUserTokens {
   powerId: number;
   regularId: number;
+  groupId: number;
+  groupName: string;
 }
 
 /**
@@ -284,17 +286,26 @@ export async function initializeTestUsers(): Promise<TestUserTokens> {
 }
 
 /**
- * Initialize test users with group assignment - creates users, extracts IDs, and adds to default group
+ * Initialize test users with group assignment - creates users, creates a new group, and adds users to that group
  * Use this for test suites that need user IDs and group membership
+ * @param allAccess - 'yes' for all access group, 'no' for regular group (default: 'no')
  */
-export async function initializeTestUsersWithGroup(groupId: number = 1): Promise<TestUserTokensWithIds> {
+export async function initializeTestUsersWithGroup(allAccess: string = 'no'): Promise<TestUserTokensWithIds> {
   const baseSetup = await initializeTestUsers();
 
   const powerId = Number(baseSetup.users.find((user) => user.type === 'power')?.id || 0);
   const regularId = Number(baseSetup.users.find((user) => user.type === 'regular')?.id || 0);
 
-  testLogger.info('Adding users to default group', `Group ID: ${groupId}`);
+  testLogger.info('Creating new group for test users', `All access: ${allAccess}`);
 
+  // Create a new group
+  const groupResponse = await createGroup(baseSetup.adminToken, allAccess);
+  const groupId = groupResponse.data.user_group.id;
+  const groupName = groupResponse.data.user_group.name;
+
+  testLogger.info(`Created group: ${groupName}`, `ID: ${groupId}`);
+
+  // Add users to the created group
   await addingUserToGroup(baseSetup.adminToken, powerId, groupId);
   testLogger.info(`Power user added to group ${groupId}:`, `User ID: ${powerId}`);
 
@@ -305,5 +316,7 @@ export async function initializeTestUsersWithGroup(groupId: number = 1): Promise
     ...baseSetup,
     powerId,
     regularId,
+    groupId,
+    groupName,
   };
 }
