@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { getTopics, checkRequestById, createTagByUi, deleteTagByUi } from './topic';
-import { initializeTestUsers } from '../users/user';
+import { initializeTestUsers, cleanupUsers } from '../users/user';
 import { nameGenerators, testLogger } from '../utils/test-helpers';
 
 let firstIdAdmin: number | undefined;
@@ -90,5 +90,9 @@ test.describe.serial('GET /api/topic', () => {
   test('Delete Tag by UI', async ({ page }) => {
     await deleteTagByUi(page, topicName);
     await page.close();
+  });
+
+  test.afterAll(async () => {
+    await cleanupUsers(adminTokenDefault, users);
   });
 });

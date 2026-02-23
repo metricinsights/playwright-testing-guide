@@ -3,7 +3,7 @@ import { createCategory, deleteCategory } from './category';
 import { createMetric, enableMetric, collectMetric, updateMetric, deleteMetric, validateMetricData } from './metric';
 import { createDimension, deleteDimension } from '../advanced/dimension';
 import { createDimensionValue } from '../advanced/dimension-value';
-import { initializeTestUsers } from '../users/user';
+import { initializeTestUsers, cleanupUsers } from '../users/user';
 
 let categoryId: number | undefined; // Variable to store categoryId
 let metricId: number | undefined; // Variable to store metricId
@@ -253,5 +253,8 @@ test.describe.serial('Metric', () => {
     } catch (error) {
       console.log('Failed to delete dimension in afterAll (might be already deleted)');
     }
+
+    // Clean up users
+    await cleanupUsers(adminTokenDefault, users);
   });
 });

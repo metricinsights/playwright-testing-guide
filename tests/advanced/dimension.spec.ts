@@ -15,7 +15,7 @@ import { createDimensionValue } from './dimension-value';
 import { createCategory, deleteCategory } from '../content/category';
 import { createMetric, enableMetric, collectMetric, updateMetric, deleteMetric } from '../content/metric';
 import { accessToMetric, accessToDimension, deleteGroup } from '../users/user-access';
-import { initializeTestUsersWithGroup } from '../users/user';
+import { initializeTestUsersWithGroup, cleanupUsers } from '../users/user';
 
 //npm run test:dev staging dimension.spec.ts
 
@@ -629,5 +629,8 @@ test.describe.serial('Dimension', () => {
     } catch (error) {
       console.log('Failed to delete group in afterAll (might be already deleted)');
     }
+
+    // Clean up users
+    await cleanupUsers(adminTokenDefault, users);
   });
 });
