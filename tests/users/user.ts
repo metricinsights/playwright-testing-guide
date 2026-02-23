@@ -1,6 +1,5 @@
 import axios from 'axios';
 import * as crypto from 'crypto';
-import { expect } from '@playwright/test';
 import { addingUserToGroup, createGroup } from './user-access';
 import { testLogger } from '../utils/test-helpers';
 
@@ -269,10 +268,6 @@ export async function initializeTestUsers(): Promise<TestUserTokens> {
   const adminToken = users.find((user) => user.type === 'administrator')?.token || '';
   const powerToken = users.find((user) => user.type === 'power')?.token || '';
   const regularToken = users.find((user) => user.type === 'regular')?.token || '';
-
-  expect(adminToken).toBeDefined();
-  expect(powerToken).toBeDefined();
-  expect(regularToken).toBeDefined();
 
   testLogger.info(`Created ${users.length} test users`);
 
