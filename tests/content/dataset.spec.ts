@@ -67,10 +67,6 @@ test.describe.serial('Dataset API Testing Suite', () => {
     regularId = userSetup.regularId;
     createdGroupId = userSetup.groupId;
     groupName = userSetup.groupName;
-
-    testLogger.info(`Created group: ${groupName}`, `ID: ${createdGroupId}`);
-    testLogger.info(`Power user added to group ${createdGroupId}`, `User ID: ${powerId}`);
-    testLogger.info(`Regular user added to group ${createdGroupId}`, `User ID: ${regularId}`);
   });
 
   test.describe('Dataset CRUD and Permission Tests', () => {
