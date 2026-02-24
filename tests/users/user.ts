@@ -125,10 +125,11 @@ export async function getToken(username: string): Promise<string> {
 
 export async function setupUsersAndTokens(
   adminToken: string,
+  userTypes: readonly UserKey[] = USER_KEYS,
 ): Promise<{ id: string; username: string; email: string; token: string; type: UserKey }[]> {
   const users: { id: string; username: string; email: string; token: string; type: UserKey }[] = [];
 
-  for (const userType of USER_KEYS) {
+  for (const userType of userTypes) {
     const user = await retryCreateUser(adminToken, userType);
 
     if (user && user.username) {
@@ -254,16 +255,18 @@ export interface TestUserTokensWithIds extends TestUserTokens {
 }
 
 /**
- * Initialize test users - creates Admin, Power, and Regular users with tokens
- * Use this for simple test suites that only need user tokens
+ * Initialize test users - creates specified user types with tokens
+ * @param userTypes - array of user types to create (default: all 3)
  */
-export async function initializeTestUsers(): Promise<TestUserTokens> {
-  testLogger.setup('Initializing test users');
+export async function initializeTestUsers(
+  userTypes: UserKey[] = [USER_TYPE_ADMIN, USER_TYPE_POWER, USER_TYPE_REGULAR],
+): Promise<TestUserTokens> {
+  testLogger.setup('Initializing test users', `Types: ${userTypes.join(', ')}`);
 
   const adminTokenDefault = await getDefaultAdminToken();
   testLogger.info('Retrieved default admin token');
 
-  const users = await setupUsersAndTokens(adminTokenDefault);
+  const users = await setupUsersAndTokens(adminTokenDefault, userTypes);
 
   const adminToken = users.find((user) => user.type === 'administrator')?.token || '';
   const powerToken = users.find((user) => user.type === 'power')?.token || '';
@@ -282,30 +285,35 @@ export async function initializeTestUsers(): Promise<TestUserTokens> {
 
 /**
  * Initialize test users with group assignment - creates users, creates a new group, and adds users to that group
- * Use this for test suites that need user IDs and group membership
  * @param allAccess - 'yes' for all access group, 'no' for regular group (default: 'no')
+ * @param userTypes - array of user types to create (default: all 3)
  */
-export async function initializeTestUsersWithGroup(allAccess: string = 'no'): Promise<TestUserTokensWithIds> {
-  const baseSetup = await initializeTestUsers();
+export async function initializeTestUsersWithGroup(
+  allAccess: string = 'no',
+  userTypes: UserKey[] = [USER_TYPE_ADMIN, USER_TYPE_POWER, USER_TYPE_REGULAR],
+): Promise<TestUserTokensWithIds> {
+  const baseSetup = await initializeTestUsers(userTypes);
 
   const powerId = Number(baseSetup.users.find((user) => user.type === 'power')?.id || 0);
   const regularId = Number(baseSetup.users.find((user) => user.type === 'regular')?.id || 0);
 
   testLogger.info('Creating new group for test users', `All access: ${allAccess}`);
 
-  // Create a new group
-  const groupResponse = await createGroup(baseSetup.adminToken, allAccess);
+  const groupResponse = await createGroup(baseSetup.adminToken || baseSetup.adminTokenDefault, allAccess);
   const groupId = groupResponse.data.user_group.id;
   const groupName = groupResponse.data.user_group.name;
 
   testLogger.info(`Created group: ${groupName}`, `ID: ${groupId}`);
 
-  // Add users to the created group
-  await addingUserToGroup(baseSetup.adminToken, powerId, groupId);
-  testLogger.info(`Power user added to group ${groupId}:`, `User ID: ${powerId}`);
+  if (powerId) {
+    await addingUserToGroup(baseSetup.adminToken || baseSetup.adminTokenDefault, powerId, groupId);
+    testLogger.info(`Power user added to group ${groupId}`, `User ID: ${powerId}`);
+  }
 
-  await addingUserToGroup(baseSetup.adminToken, regularId, groupId);
-  testLogger.info(`Regular user added to group ${groupId}`, `User ID: ${regularId}`);
+  if (regularId) {
+    await addingUserToGroup(baseSetup.adminToken || baseSetup.adminTokenDefault, regularId, groupId);
+    testLogger.info(`Regular user added to group ${groupId}`, `User ID: ${regularId}`);
+  }
 
   return {
     ...baseSetup,
