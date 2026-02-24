@@ -284,7 +284,7 @@ export async function initializeTestUsers(
 }
 
 /**
- * Initialize test users with group assignment - creates users, creates a new group, and adds users to that group
+ * Initialize test users with group assignment - creates users, creates a new group, and adds all users to that group
  * @param allAccess - 'yes' for all access group, 'no' for regular group (default: 'no')
  * @param userTypes - array of user types to create (default: all 3)
  */
@@ -293,26 +293,23 @@ export async function initializeTestUsersWithGroup(
   userTypes: UserKey[] = [USER_TYPE_ADMIN, USER_TYPE_POWER, USER_TYPE_REGULAR],
 ): Promise<TestUserTokensWithIds> {
   const baseSetup = await initializeTestUsers(userTypes);
+  const token = baseSetup.adminToken || baseSetup.adminTokenDefault;
 
   const powerId = Number(baseSetup.users.find((user) => user.type === 'power')?.id || 0);
   const regularId = Number(baseSetup.users.find((user) => user.type === 'regular')?.id || 0);
 
   testLogger.info('Creating new group for test users', `All access: ${allAccess}`);
 
-  const groupResponse = await createGroup(baseSetup.adminToken || baseSetup.adminTokenDefault, allAccess);
+  const groupResponse = await createGroup(token, allAccess);
   const groupId = groupResponse.data.user_group.id;
   const groupName = groupResponse.data.user_group.name;
 
   testLogger.info(`Created group: ${groupName}`, `ID: ${groupId}`);
 
-  if (powerId) {
-    await addingUserToGroup(baseSetup.adminToken || baseSetup.adminTokenDefault, powerId, groupId);
-    testLogger.info(`Power user added to group ${groupId}`, `User ID: ${powerId}`);
-  }
-
-  if (regularId) {
-    await addingUserToGroup(baseSetup.adminToken || baseSetup.adminTokenDefault, regularId, groupId);
-    testLogger.info(`Regular user added to group ${groupId}`, `User ID: ${regularId}`);
+  for (const user of baseSetup.users) {
+    const userId = Number(user.id);
+    await addingUserToGroup(token, userId, groupId);
+    testLogger.info(`${user.type} user added to group ${groupId}`, `User ID: ${userId}`);
   }
 
   return {
