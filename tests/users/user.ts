@@ -252,6 +252,7 @@ export interface TestUserTokensWithIds extends TestUserTokens {
   regularId: number;
   groupId: number;
   groupName: string;
+  memberIds: Record<string, number>;
 }
 
 /**
@@ -306,10 +307,12 @@ export async function initializeTestUsersWithGroup(
 
   testLogger.info(`Created group: ${groupName}`, `ID: ${groupId}`);
 
+  const memberIds: Record<string, number> = {};
   for (const user of baseSetup.users) {
     const userId = Number(user.id);
-    await addingUserToGroup(token, userId, groupId);
-    testLogger.info(`${user.type} user added to group ${groupId}`, `User ID: ${userId}`);
+    const { memberId } = await addingUserToGroup(token, userId, groupId);
+    memberIds[user.type] = memberId;
+    testLogger.info(`${user.type} user added to group ${groupId}`, `User ID: ${userId}, Member ID: ${memberId}`);
   }
 
   return {
@@ -318,5 +321,6 @@ export async function initializeTestUsersWithGroup(
     regularId,
     groupId,
     groupName,
+    memberIds,
   };
 }
