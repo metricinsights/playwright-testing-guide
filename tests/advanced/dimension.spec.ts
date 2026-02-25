@@ -14,8 +14,8 @@ import {
 import { createDimensionValue } from './dimension-value';
 import { createCategory, deleteCategory } from '../content/category';
 import { createMetric, enableMetric, collectMetric, updateMetric, deleteMetric } from '../content/metric';
-import { accessToMetric, accessToDimension } from '../users/user-access';
-import { initializeTestUsersWithGroup } from '../utils/test-helpers';
+import { accessToMetric, accessToDimension, deleteGroup } from '../users/user-access';
+import { initializeTestUsersWithGroup, cleanupUsers } from '../users/user';
 
 //npm run test:dev staging dimension.spec.ts
 
@@ -26,17 +26,18 @@ let regularId: number | undefined; // Variable to store regularID
 let categoryId: number | undefined; // Variable to store categoryId
 let metricId: number | undefined; // Variable to store metricId
 let dimensionMetricId: number | undefined; // Variable to store metricId
+let groupId: number | undefined; // Variable to store groupId
+let groupName: string; // Variable to store groupName
 const busAndTechnicalOwner = 'admin'; // Initialize with a default value
 let users: { id: string; username: string; token: string; type: 'administrator' | 'power' | 'regular' }[] = [];
 let adminTokenDefault: string;
 let adminToken: string;
 let powerToken: string;
 let regularToken: string;
-let userTokens: { token: string; userType: string }[] = [];
 
 // Initialize tokens before running tests
 test.beforeAll(async () => {
-  const userSetup = await initializeTestUsersWithGroup(1);
+  const userSetup = await initializeTestUsersWithGroup('no');
 
   adminTokenDefault = userSetup.adminTokenDefault;
   adminToken = userSetup.adminToken;
@@ -44,13 +45,9 @@ test.beforeAll(async () => {
   regularToken = userSetup.regularToken;
   powerId = userSetup.powerId;
   regularId = userSetup.regularId;
+  groupId = userSetup.groupId;
+  groupName = userSetup.groupName;
   users = userSetup.users;
-
-  userTokens = [
-    { token: adminToken, userType: 'Admin' },
-    { token: powerToken, userType: 'Power User' },
-    { token: regularToken, userType: 'Regular User' },
-  ];
 });
 
 test.describe.serial('Dimension', () => {
@@ -626,5 +623,14 @@ test.describe.serial('Dimension', () => {
     } catch (error) {
       console.log('Failed to delete dimension in afterAll (might be already deleted)');
     }
+
+    try {
+      if (groupId !== undefined) await deleteGroup(adminToken, groupId as number);
+    } catch (error) {
+      console.log('Failed to delete group in afterAll (might be already deleted)');
+    }
+
+    // Clean up users
+    await cleanupUsers(adminTokenDefault, users);
   });
 });

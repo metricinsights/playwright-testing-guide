@@ -1,5 +1,7 @@
 import axios from 'axios';
 import * as crypto from 'crypto';
+import { addingUserToGroup, createGroup } from './user-access';
+import { testLogger } from '../utils/test-helpers';
 
 export const instanceBaseUrl = process.env.BASE_URL;
 
@@ -123,10 +125,11 @@ export async function getToken(username: string): Promise<string> {
 
 export async function setupUsersAndTokens(
   adminToken: string,
+  userTypes: readonly UserKey[] = USER_KEYS,
 ): Promise<{ id: string; username: string; email: string; token: string; type: UserKey }[]> {
   const users: { id: string; username: string; email: string; token: string; type: UserKey }[] = [];
 
-  for (const userType of USER_KEYS) {
+  for (const userType of userTypes) {
     const user = await retryCreateUser(adminToken, userType);
 
     if (user && user.username) {
@@ -228,4 +231,96 @@ export async function getUserTokenWithoutAuth() {
       message: 'An unexpected error occurred',
     };
   }
+}
+
+// User setup helpers - interfaces
+export interface TestUserTokens {
+  adminTokenDefault: string;
+  adminToken: string;
+  powerToken: string;
+  regularToken: string;
+  users: Array<{
+    id: string;
+    username: string;
+    token: string;
+    type: 'administrator' | 'power' | 'regular';
+  }>;
+}
+
+export interface TestUserTokensWithIds extends TestUserTokens {
+  powerId: number;
+  regularId: number;
+  groupId: number;
+  groupName: string;
+  memberIds: Record<string, number>;
+}
+
+/**
+ * Initialize test users - creates specified user types with tokens
+ * @param userTypes - array of user types to create (default: all 3)
+ */
+export async function initializeTestUsers(
+  userTypes: UserKey[] = [USER_TYPE_ADMIN, USER_TYPE_POWER, USER_TYPE_REGULAR],
+): Promise<TestUserTokens> {
+  testLogger.setup('Initializing test users', `Types: ${userTypes.join(', ')}`);
+
+  const adminTokenDefault = await getDefaultAdminToken();
+  testLogger.info('Retrieved default admin token');
+
+  const users = await setupUsersAndTokens(adminTokenDefault, userTypes);
+
+  const adminToken = users.find((user) => user.type === 'administrator')?.token || '';
+  const powerToken = users.find((user) => user.type === 'power')?.token || '';
+  const regularToken = users.find((user) => user.type === 'regular')?.token || '';
+
+  testLogger.info(`Created ${users.length} test users`);
+
+  return {
+    adminTokenDefault,
+    adminToken,
+    powerToken,
+    regularToken,
+    users,
+  };
+}
+
+/**
+ * Initialize test users with group assignment - creates users, creates a new group, and adds all users to that group
+ * @param allAccess - 'yes' for all access group, 'no' for regular group (default: 'no')
+ * @param userTypes - array of user types to create (default: all 3)
+ */
+export async function initializeTestUsersWithGroup(
+  allAccess: string = 'no',
+  userTypes: UserKey[] = [USER_TYPE_ADMIN, USER_TYPE_POWER, USER_TYPE_REGULAR],
+): Promise<TestUserTokensWithIds> {
+  const baseSetup = await initializeTestUsers(userTypes);
+  const token = baseSetup.adminToken || baseSetup.adminTokenDefault;
+
+  const powerId = Number(baseSetup.users.find((user) => user.type === 'power')?.id || 0);
+  const regularId = Number(baseSetup.users.find((user) => user.type === 'regular')?.id || 0);
+
+  testLogger.info('Creating new group for test users', `All access: ${allAccess}`);
+
+  const groupResponse = await createGroup(token, allAccess);
+  const groupId = groupResponse.data.user_group.id;
+  const groupName = groupResponse.data.user_group.name;
+
+  testLogger.info(`Created group: ${groupName}`, `ID: ${groupId}`);
+
+  const memberIds: Record<string, number> = {};
+  for (const user of baseSetup.users) {
+    const userId = Number(user.id);
+    const { memberId } = await addingUserToGroup(token, userId, groupId);
+    memberIds[user.type] = memberId;
+    testLogger.info(`${user.type} user added to group ${groupId}`, `User ID: ${userId}, Member ID: ${memberId}`);
+  }
+
+  return {
+    ...baseSetup,
+    powerId,
+    regularId,
+    groupId,
+    groupName,
+    memberIds,
+  };
 }
