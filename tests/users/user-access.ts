@@ -42,8 +42,12 @@ export async function accessToDimension(token: string, dimensionId: number, user
   return responseAccessToDimensionForPower;
 }
 
-//groupMember
-export async function addingUserToGroup(token: string, user: number, group: number): Promise<AxiosResponse> {
+export interface GroupMemberResponse {
+  response: AxiosResponse;
+  memberId: number;
+}
+
+export async function addingUserToGroup(token: string, user: number, group: number): Promise<GroupMemberResponse> {
   try {
     const response = await apiInstance.post(
       '/api/user_group_member/',
@@ -58,12 +62,14 @@ export async function addingUserToGroup(token: string, user: number, group: numb
       },
     );
 
-    return response;
+    const memberId = response.data?.user_group_member?.id || 0;
+
+    return { response, memberId };
   } catch (error: any) {
     // Handle 400 error (user might already be in the group)
     if (error.response?.status === 400) {
       console.log(`User ${user} may already be in group ${group} - continuing`);
-      return error.response;
+      return { response: error.response, memberId: 0 };
     }
     throw error;
   }
